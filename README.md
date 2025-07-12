@@ -1,30 +1,80 @@
-# El Bucle character app
+# El Bucle - Ficha de Personaje
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+Aplicación PWA (Progressive Web App) para gestionar fichas de personaje del librojuego "El Bucle" con estética cyberpunk.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/smaciamazonprime-gmailcoms-projects/v0-el-bucle-character-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/tufwqwYkG8G)
+## Características
 
-## Overview
+- **PWA Instalable**: Funciona como una aplicación nativa en dispositivos móviles y escritorio
+- **Offline First**: Funciona sin conexión una vez instalada
+- **Persistencia Local**: Los datos se guardan automáticamente en el navegador
+- **Diseño Cyberpunk**: Interfaz con estética futurista y neón
+- **Responsive**: Adaptada para móviles, tablets y escritorio
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## Tecnologías
 
-## Deployment
+- **React 18**: Librería de UI
+- **Vite**: Build tool y dev server
+- **TypeScript**: Tipado estático
+- **Tailwind CSS**: Estilos utility-first
+- **shadcn/ui**: Componentes UI basados en Radix UI
+- **vite-plugin-pwa**: Configuración PWA
 
-Your project is live at:
+## Instalación
 
-**[https://vercel.com/smaciamazonprime-gmailcoms-projects/v0-el-bucle-character-app](https://vercel.com/smaciamazonprime-gmailcoms-projects/v0-el-bucle-character-app)**
+```bash
+# Instalar dependencias
+pnpm install
 
-## Build your app
+# Modo desarrollo
+pnpm dev
 
-Continue building your app on:
+# Build de producción
+pnpm build
 
-**[https://v0.dev/chat/projects/tufwqwYkG8G](https://v0.dev/chat/projects/tufwqwYkG8G)**
+# Preview de producción
+pnpm preview
+```
 
-## How It Works
+## Estructura del Proyecto
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+```
+el-bucle/
+├── src/
+│   ├── App.tsx           # Componente principal
+│   ├── main.tsx          # Punto de entrada
+│   ├── index.css         # Estilos globales
+│   └── vite-env.d.ts     # Tipos de Vite
+├── components/           # Componentes React
+│   ├── character-context.tsx  # Estado global
+│   ├── character-sheet.tsx    # Componente principal
+│   ├── attributes-section.tsx # Sección atributos
+│   ├── inventory-section.tsx  # Sección inventario
+│   ├── combat-section.tsx     # Sección combate
+│   ├── clues-section.tsx      # Sección pistas
+│   ├── time-section.tsx       # Sección tiempo
+│   ├── notes-section.tsx      # Sección notas
+│   └── ui/                    # Componentes UI
+├── hooks/                # Custom hooks
+├── lib/                  # Utilidades
+├── public/               # Assets estáticos
+├── index.html           # HTML principal
+├── vite.config.ts       # Configuración Vite
+└── tailwind.config.ts   # Configuración Tailwind
+```
+
+## PWA
+
+La aplicación se puede instalar como PWA en:
+
+- **Android**: Chrome -> Menú -> "Agregar a pantalla de inicio"
+- **iOS**: Safari -> Compartir -> "Agregar a pantalla de inicio"
+- **Desktop**: Chrome/Edge -> Icono de instalación en la barra de direcciones
+
+## Funcionalidades
+
+1. **Personaje**: Gestión de atributos (Body, Mind, Gesta, Status) y control de tiempo
+2. **Equipo**: Inventario de items, armas y pistas
+3. **Combate**: Sistema de combate con múltiples enemigos
+4. **Notas**: Sistema de investigación con notas estructuradas
+
+Todos los datos se guardan automáticamente en localStorage.

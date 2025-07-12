@@ -1,15 +1,27 @@
-"use client"
 
 import { useCharacter } from "./character-context"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Minus, Plus, Calendar, Clock } from "lucide-react"
+import { Minus, Plus, Calendar, Clock, RotateCcw, Trash2 } from "lucide-react"
+import { useState } from "react"
 
 export function TimeSection() {
-  const { character, updateCharacter } = useCharacter()
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [showResetAllConfirm, setShowResetAllConfirm] = useState(false)
+  const { character, updateCharacter, resetDay, resetAll } = useCharacter()
 
   const formatHour = (hour: number) => {
     return `${hour.toString().padStart(2, "0")}:00`
+  }
+
+  const handleResetDay = () => {
+    resetDay()
+    setShowResetConfirm(false)
+  }
+
+  const handleResetAll = () => {
+    resetAll()
+    setShowResetAllConfirm(false)
   }
 
   return (
@@ -88,6 +100,77 @@ export function TimeSection() {
             <span>15:30</span>
             <span>23:00</span>
           </div>
+        </div>
+      </div>
+
+      {/* Botones de Reset */}
+      <div className="mt-8 pt-6 border-t border-purple-400/20 space-y-4">
+        {/* Reset Diario */}
+        <div className="text-center">
+          <p className="text-purple-300 font-mono text-sm mb-4">NUEVO DÍA</p>
+          {!showResetConfirm ? (
+            <Button
+              onClick={() => setShowResetConfirm(true)}
+              className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-mono font-bold px-6 py-3 w-full"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              RESET DIARIO
+            </Button>
+          ) : (
+            <div className="bg-gray-900/50 border border-red-400/30 rounded-lg p-4">
+              <p className="text-red-400 font-mono text-sm mb-2">¿Confirmar reset diario?</p>
+              <p className="text-red-300/70 font-mono text-xs mb-4">
+                Se avanzará al día {character.day + 1}, se reiniciará la hora, se borrarán objetos/armas sin candado y
+                pistas temporales
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleResetDay} className="bg-red-500 hover:bg-red-600 text-white font-mono font-bold">
+                  CONFIRMAR
+                </Button>
+                <Button
+                  onClick={() => setShowResetConfirm(false)}
+                  variant="outline"
+                  className="border-gray-400 text-gray-400 hover:bg-gray-400/20 font-mono"
+                >
+                  CANCELAR
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Reset Completo */}
+        <div className="text-center">
+          <p className="text-red-300 font-mono text-sm mb-4">RESET COMPLETO</p>
+          {!showResetAllConfirm ? (
+            <Button
+              onClick={() => setShowResetAllConfirm(true)}
+              variant="outline"
+              className="border-red-500 text-red-400 hover:bg-red-500/20 font-mono font-bold px-6 py-3 w-full"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              BORRAR TODO
+            </Button>
+          ) : (
+            <div className="bg-gray-900/50 border border-red-500/50 rounded-lg p-4">
+              <p className="text-red-400 font-mono text-sm mb-2">⚠️ ¿BORRAR TODA LA FICHA?</p>
+              <p className="text-red-300/70 font-mono text-xs mb-4">
+                Se perderán TODOS los datos excepto las notas de investigación
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleResetAll} className="bg-red-600 hover:bg-red-700 text-white font-mono font-bold">
+                  SÍ, BORRAR TODO
+                </Button>
+                <Button
+                  onClick={() => setShowResetAllConfirm(false)}
+                  variant="outline"
+                  className="border-gray-400 text-gray-400 hover:bg-gray-400/20 font-mono"
+                >
+                  CANCELAR
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

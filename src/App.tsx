@@ -1,13 +1,11 @@
-"use client"
-
 import { CharacterProvider } from "@/components/character-context"
 import { CharacterSheet } from "@/components/character-sheet"
 
-export default function Home() {
+export default function App() {
   return (
     <CharacterProvider>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-6 max-w-7xl">
           <header className="text-center mb-8">
             <h1 className="text-4xl md:text-6xl font-bold font-mono text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-cyan-400 to-yellow-400 mb-2">
               EL BUCLE

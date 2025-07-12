@@ -1,9 +1,9 @@
-"use client"
 
 import { useCharacter } from "./character-context"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Minus, Plus } from "lucide-react"
+import { Input } from "@/components/ui/input" // Import Input component
+import { Minus, Plus, BookOpen } from "lucide-react" // Import BookOpen icon
 
 export function AttributesSection() {
   const { character, updateCharacter } = useCharacter()
@@ -103,7 +103,7 @@ export function AttributesSection() {
       </div>
 
       {/* Estado */}
-      <div className="text-center">
+      <div className="text-center mb-6">
         <label className="block text-pink-400 font-mono text-sm mb-2">ESTADO</label>
         <Select value={character.status} onValueChange={(value: any) => updateCharacter({ status: value })}>
           <SelectTrigger
@@ -123,6 +123,20 @@ export function AttributesSection() {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Sección Actual */}
+      <div className="text-center mt-6 pt-6 border-t border-pink-400/20">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <BookOpen className="w-5 h-5 text-pink-400" />
+          <label className="text-pink-400 font-mono text-lg">SECCIÓN ACTUAL</label>
+        </div>
+        <Input
+          value={character.currentSection}
+          onChange={(e) => updateCharacter({ currentSection: e.target.value })}
+          placeholder="Ej: Capítulo 3, Sección 12"
+          className="bg-gray-900/50 border-pink-400 text-pink-100 placeholder-pink-400/50 font-mono text-center"
+        />
       </div>
     </div>
   )
