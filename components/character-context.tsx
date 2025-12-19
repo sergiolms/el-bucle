@@ -3,7 +3,8 @@ import type React from "react"
 import { createContext, useContext, useState, useCallback, useEffect } from "react"
 import { useAuth } from "@/src/lib/useAuth"
 import { useFirestoreSync } from "@/src/lib/useFirestoreSync"
-import { FirebaseCharacterService } from "@/src/lib/firebaseService"
+import { FirebaseCharacterService, SyncResult } from "@/src/lib/firebaseService"
+import { DataConflictModal } from "./data-conflict-modal"
 
 export interface Weapon {
   id: string
@@ -129,9 +130,10 @@ const CharacterContext = createContext<CharacterContextType | undefined>(undefin
 export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const [character, setCharacter] = useState<CharacterData>(defaultCharacter)
   const [initialized, setInitialized] = useState(false)
+  const [conflictData, setConflictData] = useState<SyncResult | null>(null)
   const { user } = useAuth()
 
-  // Cargar datos iniciales solo una vez
+  // Load initial data only once
   useEffect(() => {
     if (initialized) return
 
@@ -142,29 +144,61 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
     setInitialized(true)
   }, [initialized])
 
-  // Callback for Firestore updates (memoizado y estable)
+  // Callback for Firestore updates (memoized and stable)
   const handleFirestoreUpdate = useCallback((data: CharacterData) => {
     setCharacter(prevCharacter => {
-      // Solo actualizar si los datos son realmente diferentes
+      // Only update if data is actually different
       const prevData = JSON.stringify(prevCharacter)
       const newData = JSON.stringify(data)
 
       if (prevData === newData) {
-        return prevCharacter // No cambiar si son iguales
+        return prevCharacter // Don't change if equal
       }
 
       return data
     })
   }, [])
 
-  // Firestore sync (solo si hay usuario)
+  // Callback for handling conflicts
+  const handleConflict = useCallback((syncResult: SyncResult) => {
+    setConflictData(syncResult)
+  }, [])
+
+  // Handlers for conflict resolution
+  const handleSelectLocal = useCallback(async () => {
+    if (!conflictData || !conflictData.localData || !user) return
+
+    // Use local data
+    setCharacter(conflictData.localData)
+
+    // Save to Firestore and localStorage
+    await FirebaseCharacterService.saveCharacter(user.uid, conflictData.localData)
+    FirebaseCharacterService.saveToLocalStorage(conflictData.localData, Date.now())
+
+    setConflictData(null)
+  }, [conflictData, user])
+
+  const handleSelectCloud = useCallback(async () => {
+    if (!conflictData || !conflictData.cloudData) return
+
+    // Use cloud data
+    setCharacter(conflictData.cloudData)
+
+    // Save to localStorage
+    FirebaseCharacterService.saveToLocalStorage(conflictData.cloudData, Date.now())
+
+    setConflictData(null)
+  }, [conflictData])
+
+  // Firestore sync (only if there is a user)
   useFirestoreSync({
     userId: user?.uid || null,
     character,
-    onUpdate: handleFirestoreUpdate
+    onUpdate: handleFirestoreUpdate,
+    onConflict: handleConflict
   })
 
-  // Memoizar updateCharacter para evitar re-renders
+  // Memoize updateCharacter to avoid re-renders
   const updateCharacter = useCallback((updates: Partial<CharacterData>) => {
     setCharacter((prev) => ({ ...prev, ...updates }))
   }, [])
@@ -343,26 +377,26 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const resetDay = () => {
     setCharacter((prev) => ({
       ...prev,
-      day: prev.day + 1, // Incrementar día automáticamente
-      hour: 8, // Reiniciar a las 8:00
-      items: prev.items.filter((item) => item.locked), // Mantener solo items con candado
-      weapons: prev.weapons.filter((weapon) => weapon.locked), // Mantener solo armas con candado
-      clues: prev.clues.filter((c) => c.type !== "temporal"), // Mantener solo pistas normales
-      enemies: [], // Borrar enemigos
+      day: prev.day + 1, // Automatically increment day
+      hour: 8, // Reset to 8:00
+      items: prev.items.filter((item) => item.locked), // Keep only locked items
+      weapons: prev.weapons.filter((weapon) => weapon.locked), // Keep only locked weapons
+      clues: prev.clues.filter((c) => c.type !== "temporal"), // Keep only normal clues
+      enemies: [], // Clear enemies
       selectedWeaponId: prev.weapons.find((w) => w.locked && w.id === prev.selectedWeaponId)
         ? prev.selectedWeaponId
         : null,
       lastPlayerRoll: null,
       useElementalDamage: false,
       credits: 0, // Reset credits to 0
-      // Las notas y currentSection se mantienen intactas
+      // Notes and currentSection remain intact
     }))
   }
 
   const resetAll = () => {
     setCharacter((prev) => ({
       ...defaultCharacter,
-      notes: prev.notes, // Preservar las notas
+      notes: prev.notes, // Preserve notes
       currentSection: prev.currentSection, // Preserve currentSection
     }))
   }
@@ -396,6 +430,15 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+
+      {/* Data conflict modal */}
+      <DataConflictModal
+        isOpen={!!conflictData}
+        localData={conflictData?.localData || null}
+        cloudData={conflictData?.cloudData || character}
+        onSelectLocal={handleSelectLocal}
+        onSelectCloud={handleSelectCloud}
+      />
     </CharacterContext.Provider>
   )
 }

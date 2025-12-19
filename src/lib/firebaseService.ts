@@ -17,12 +17,19 @@ export interface CharacterWithTimestamp {
   timestamp: number
 }
 
+export interface SyncResult {
+  character: CharacterData
+  hasConflict: boolean
+  localData?: CharacterData
+  cloudData?: CharacterData
+}
+
 /**
- * Servicio para manejar todas las operaciones de Firestore relacionadas con personajes
+ * Service to handle all Firestore operations related to characters
  */
 export class FirebaseCharacterService {
   /**
-   * Obtiene el documento de un personaje desde Firestore
+   * Gets a character document from Firestore
    */
   static async getCharacter(userId: string): Promise<CharacterData | null> {
     if (!isFirebaseConfigured || !db) {
@@ -36,7 +43,7 @@ export class FirebaseCharacterService {
 
       if (docSnap.exists()) {
         const data = docSnap.data() as CharacterDocument
-        // Remover campos internos antes de devolver
+        // Remove internal fields before returning
         const { userId: _, createdAt: __, updatedAt: ___, ...characterData } = data
         return characterData
       }
@@ -49,7 +56,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Guarda o actualiza un personaje en Firestore
+   * Saves or updates a character in Firestore
    */
   static async saveCharacter(userId: string, character: CharacterData): Promise<void> {
     if (!isFirebaseConfigured || !db) {
@@ -76,7 +83,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Actualiza campos específicos de un personaje en Firestore
+   * Updates specific fields of a character in Firestore
    */
   static async updateCharacter(userId: string, updates: Partial<CharacterData>): Promise<void> {
     if (!isFirebaseConfigured || !db) {
@@ -97,7 +104,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Elimina un personaje de Firestore
+   * Deletes a character from Firestore
    */
   static async deleteCharacter(userId: string): Promise<void> {
     if (!isFirebaseConfigured || !db) {
@@ -115,7 +122,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Escucha cambios en tiempo real de un personaje
+   * Listens to real-time changes of a character
    */
   static subscribeToCharacter(
     userId: string,
@@ -146,31 +153,31 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Migra datos de localStorage a Firestore
-   * Se ejecuta una sola vez cuando el usuario se autentica por primera vez
+   * Migrates data from localStorage to Firestore
+   * Runs only once when the user authenticates for the first time
    */
   static async migrateFromLocalStorage(userId: string): Promise<boolean> {
     try {
-      // Verificar si ya existe el personaje en Firestore
+      // Check if character already exists in Firestore
       const existingCharacter = await this.getCharacter(userId)
       if (existingCharacter) {
-        // Ya existe en Firestore, no migrar
+        // Already exists in Firestore, don't migrate
         return false
       }
 
-      // Intentar cargar de localStorage
+      // Try to load from localStorage
       const localData = localStorage.getItem(LOCALSTORAGE_KEY)
       if (!localData) {
-        // No hay datos en localStorage
+        // No data in localStorage
         return false
       }
 
       const characterData = JSON.parse(localData) as CharacterData
 
-      // Guardar en Firestore
+      // Save to Firestore
       await this.saveCharacter(userId, characterData)
 
-      console.log('✅ Datos migrados de localStorage a Firestore exitosamente')
+      console.log('✅ Data migrated from localStorage to Firestore successfully')
       return true
     } catch (error) {
       console.error('Error migrating from localStorage to Firestore:', error)
@@ -179,7 +186,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Guarda en localStorage con timestamp
+   * Saves to localStorage with timestamp
    */
   static saveToLocalStorage(character: CharacterData, timestamp?: number): void {
     try {
@@ -192,7 +199,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Carga datos de localStorage con timestamp
+   * Loads data from localStorage with timestamp
    */
   static loadFromLocalStorage(): CharacterWithTimestamp | null {
     try {
@@ -212,59 +219,91 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Sincroniza datos entre localStorage y Firestore
-   * Usa timestamps para determinar cuál es más reciente
-   * REGLA: Si no hay datos locales, SIEMPRE usa Firestore (no lo machaques)
+   * Synchronizes data between localStorage and Firestore
+   * Detects conflicts when both have data
+   * RULE: If there's no local data, ALWAYS use Firestore (don't overwrite it)
    */
-  static async syncWithLocalStorage(userId: string): Promise<CharacterData | null> {
+  static async syncWithLocalStorage(userId: string): Promise<SyncResult | null> {
     try {
-      // Obtener datos de ambas fuentes
+      // Get data from both sources
       const localData = this.loadFromLocalStorage()
       const firestoreDoc = await this.getCharacter(userId)
 
-      // Si no hay datos en ninguna fuente
+      // If there's no data in either source
       if (!localData && !firestoreDoc) {
-        console.log('📭 No hay datos para sincronizar')
+        console.log('📭 No data to synchronize')
         return null
       }
 
-      // ⚠️ IMPORTANTE: Si no hay datos locales pero SÍ en Firestore, SIEMPRE usar Firestore
-      // (El usuario puede haber perdido sus datos locales)
+      // ⚠️ IMPORTANT: If there's no local data but YES in Firestore, ALWAYS use Firestore
+      // (User may have lost their local data)
       if (!localData && firestoreDoc) {
-        console.log('📥 Recuperando datos de Firestore (localStorage vacío)')
+        console.log('📥 Recovering data from Firestore (localStorage empty)')
         this.saveToLocalStorage(firestoreDoc, Date.now())
-        return firestoreDoc
+        return {
+          character: firestoreDoc,
+          hasConflict: false
+        }
       }
 
-      // Si solo hay datos locales, subirlos a Firestore
+      // If there's only local data, upload it to Firestore
       if (localData && !firestoreDoc) {
-        console.log('📤 Subiendo datos locales a Firestore (primera sincronización)')
+        console.log('📤 Uploading local data to Firestore (first sync)')
         await this.saveCharacter(userId, localData.character)
-        return localData.character
+        return {
+          character: localData.character,
+          hasConflict: false
+        }
       }
 
-      // Si hay datos en ambas fuentes, usar el más reciente por timestamp
+      // If there's data in both sources, detect conflict
       if (localData && firestoreDoc) {
-        if (!db) return localData.character
+        if (!db) return {
+          character: localData.character,
+          hasConflict: false
+        }
 
         const firestoreTimestamp = new Date((await getDoc(doc(db, CHARACTERS_COLLECTION, userId))).data()?.updatedAt || 0).getTime()
 
-        // Si localStorage no tiene timestamp, significa que puede ser data antigua
-        // En ese caso, priorizar Firestore
+        // If localStorage has no timestamp, THERE'S A CONFLICT
+        // We can't determine which is more recent
         if (!localData.timestamp || localData.timestamp === 0) {
-          console.log('⚠️ localStorage sin timestamp, usando Firestore por seguridad')
-          this.saveToLocalStorage(firestoreDoc, firestoreTimestamp)
-          return firestoreDoc
+          console.log('⚠️ CONFLICT: localStorage without timestamp')
+          return {
+            character: firestoreDoc, // Temporary default
+            hasConflict: true,
+            localData: localData.character,
+            cloudData: firestoreDoc
+          }
         }
 
+        // If timestamps are very different (more than 10 seconds), THERE'S A CONFLICT
+        const timeDiff = Math.abs(localData.timestamp - firestoreTimestamp)
+        if (timeDiff > 10000) { // 10 seconds
+          console.log('⚠️ CONFLICT: Different data detected')
+          return {
+            character: firestoreDoc, // Temporary default
+            hasConflict: true,
+            localData: localData.character,
+            cloudData: firestoreDoc
+          }
+        }
+
+        // If they're similar in timestamp, use the most recent automatically
         if (localData.timestamp > firestoreTimestamp) {
-          console.log('🔄 Datos locales más recientes, subiendo a Firestore')
+          console.log('🔄 Local data more recent, uploading to Firestore')
           await this.saveCharacter(userId, localData.character)
-          return localData.character
+          return {
+            character: localData.character,
+            hasConflict: false
+          }
         } else {
-          console.log('🔄 Datos de Firestore más recientes, descargando')
+          console.log('🔄 Firestore data more recent, downloading')
           this.saveToLocalStorage(firestoreDoc, firestoreTimestamp)
-          return firestoreDoc
+          return {
+            character: firestoreDoc,
+            hasConflict: false
+          }
         }
       }
 
@@ -276,7 +315,7 @@ export class FirebaseCharacterService {
   }
 
   /**
-   * Verifica si un usuario tiene datos guardados en Firestore
+   * Checks if a user has data saved in Firestore
    */
   static async hasCharacter(userId: string): Promise<boolean> {
     if (!isFirebaseConfigured || !db) {

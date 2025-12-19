@@ -2,16 +2,16 @@ import { useEffect, useCallback, useRef, useState } from 'react'
 import { enableIndexedDbPersistence } from 'firebase/firestore'
 import { db, isFirebaseConfigured } from './firebase'
 import { CharacterData } from '@/components/character-context'
-import { FirebaseCharacterService } from './firebaseService'
+import { FirebaseCharacterService, SyncResult } from './firebaseService'
 
-// Enable offline persistence (solo se ejecuta una vez)
+// Enable offline persistence (only runs once)
 let persistenceEnabled = false
 if (!persistenceEnabled && isFirebaseConfigured && db) {
   enableIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
-      console.warn('⚠️ Múltiples pestañas abiertas, la persistencia solo funciona en una.')
+      console.warn('⚠️ Multiple tabs open, persistence only works in one.')
     } else if (err.code === 'unimplemented') {
-      console.warn('⚠️ Este navegador no soporta persistencia offline.')
+      console.warn('⚠️ This browser does not support offline persistence.')
     }
   })
   persistenceEnabled = true
@@ -21,39 +21,45 @@ interface UseFirestoreSyncProps {
   userId: string | null
   character: CharacterData
   onUpdate: (data: CharacterData) => void
+  onConflict?: (syncResult: SyncResult) => void
 }
 
-export function useFirestoreSync({ userId, character, onUpdate }: UseFirestoreSyncProps) {
+export function useFirestoreSync({ userId, character, onUpdate, onConflict }: UseFirestoreSyncProps) {
   const [synced, setSynced] = useState(false)
   const lastSavedRef = useRef<string>('')
   const pendingChangesRef = useRef(false)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Sincronizar al iniciar sesión (solo una vez)
+  // Synchronize on login (only once)
   useEffect(() => {
     if (!isFirebaseConfigured || !userId || synced) return
 
     const initialSync = async () => {
-      const syncedCharacter = await FirebaseCharacterService.syncWithLocalStorage(userId)
-      if (syncedCharacter) {
-        console.log('✅ Sincronización inicial completada')
-        onUpdate(syncedCharacter)
-        lastSavedRef.current = JSON.stringify(syncedCharacter)
+      const syncResult = await FirebaseCharacterService.syncWithLocalStorage(userId)
+      if (syncResult) {
+        console.log('✅ Initial synchronization completed')
+
+        if (syncResult.hasConflict && onConflict) {
+          onConflict(syncResult)
+        } else {
+          onUpdate(syncResult.character)
+          lastSavedRef.current = JSON.stringify(syncResult.character)
+        }
       }
       setSynced(true)
     }
 
     initialSync()
-  }, [userId, synced, onUpdate])
+  }, [userId, synced, onUpdate, onConflict])
 
-  // Escuchar cambios en tiempo real de Firestore (solo si está logueado)
+  // Listen to real-time changes from Firestore (only if logged in)
   useEffect(() => {
     if (!isFirebaseConfigured || !userId || !synced) return
 
     const unsubscribe = FirebaseCharacterService.subscribeToCharacter(
       userId,
       (remoteCharacter) => {
-        // NO actualizar si hay cambios locales pendientes de guardar
+        // DO NOT update if there are local changes pending to be saved
         if (pendingChangesRef.current) {
           return
         }
@@ -61,60 +67,60 @@ export function useFirestoreSync({ userId, character, onUpdate }: UseFirestoreSy
         const remoteData = JSON.stringify(remoteCharacter)
         const localData = lastSavedRef.current
 
-        // Solo actualizar si los datos remotos son diferentes
+        // Only update if remote data is different
         if (remoteData !== localData) {
-          console.log('🔄 Cambios detectados desde otro dispositivo')
+          console.log('🔄 Changes detected from another device')
           onUpdate(remoteCharacter)
           FirebaseCharacterService.saveToLocalStorage(remoteCharacter)
           lastSavedRef.current = remoteData
         }
       },
       (error) => {
-        console.error('❌ Error en sincronización:', error)
+        console.error('❌ Synchronization error:', error)
       }
     )
 
     return () => unsubscribe()
   }, [userId, synced, onUpdate])
 
-  // Auto-guardar cambios (con debounce)
+  // Auto-save on character changes (debounced)
   useEffect(() => {
     const currentData = JSON.stringify(character)
 
-    // No guardar si no ha cambiado
+    // Do not save if it hasn't changed
     if (currentData === lastSavedRef.current) {
       pendingChangesRef.current = false
       return
     }
 
-    // Marcar que hay cambios pendientes
+    // Mark that there are pending changes
     pendingChangesRef.current = true
 
-    // Limpiar timeout anterior si existe
+    // Clear previous timeout if exists
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        // Siempre guardar en localStorage
+        // Always save to localStorage
         FirebaseCharacterService.saveToLocalStorage(character)
 
-        // Si está logueado y Firebase configurado, también guardar en Firestore
+        // If logged in and Firebase configured, also save to Firestore
         if (isFirebaseConfigured && userId && synced) {
           await FirebaseCharacterService.saveCharacter(userId, character)
-          console.log('💾 Guardado: localStorage + Firestore')
+          console.log('💾 Saved: localStorage + Firestore')
         } else {
-          console.log('💾 Guardado: solo localStorage')
+          console.log('💾 Saved: localStorage only')
         }
 
         lastSavedRef.current = currentData
-        pendingChangesRef.current = false // Cambios guardados
+        pendingChangesRef.current = false // Changes saved
       } catch (error) {
-        console.error('❌ Error al auto-guardar:', error)
+        console.error('❌ Auto-save error:', error)
         pendingChangesRef.current = false
       }
-    }, 1000) // Debounce 1 segundo
+    }, 1000) // Debounce 1 second
 
     return () => {
       if (saveTimeoutRef.current) {
@@ -123,16 +129,16 @@ export function useFirestoreSync({ userId, character, onUpdate }: UseFirestoreSy
     }
   }, [character, userId, synced])
 
-  // Función manual para guardar
+  // Manual save function
   const saveToFirestore = useCallback(async () => {
     if (!userId) return
 
     try {
       await FirebaseCharacterService.saveCharacter(userId, character)
       lastSavedRef.current = JSON.stringify(character)
-      console.log('💾 Guardado manual exitoso')
+      console.log('💾 Manual save successful')
     } catch (error) {
-      console.error('❌ Error al guardar:', error)
+      console.error('❌ Save error:', error)
     }
   }, [userId, character])
 
