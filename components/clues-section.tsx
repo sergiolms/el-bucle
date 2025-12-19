@@ -28,7 +28,7 @@ export function CluesSection() {
       </div>
 
       {/* Añadir nueva pista */}
-      <div className="mb-6 p-4 bg-gray-900/30 rounded border border-green-400/20">
+      <div className="mb-6 p-4 bg-black/10 backdrop-blur-md rounded border border-green-400/20">
         <div className="flex gap-2 mb-3">
           <Button
             variant={clueType === "normal" ? "default" : "outline"}
@@ -62,7 +62,7 @@ export function CluesSection() {
             value={newClue}
             onChange={(e) => setNewClue(e.target.value)}
             placeholder="Nueva pista..."
-            className="bg-gray-900/50 border-green-400 text-green-100 placeholder-green-400/50 font-mono"
+            className="bg-black/15 backdrop-blur-md border-green-400 text-green-100 placeholder-green-400/50 font-mono"
             onKeyPress={(e) => e.key === "Enter" && handleAddClue()}
           />
           <Button onClick={handleAddClue} className="bg-green-500 hover:bg-green-600 text-black">
@@ -83,7 +83,7 @@ export function CluesSection() {
           {normalClues.map((clue) => (
             <div
               key={clue.id}
-              className="flex items-start justify-between bg-gray-900/30 p-3 rounded border border-green-400/20"
+              className="flex items-start justify-between bg-black/10 backdrop-blur-md p-3 rounded border border-green-400/20"
             >
               <span className="text-green-100 font-mono text-sm flex-1 mr-2">{clue.text}</span>
               <Button
@@ -121,7 +121,7 @@ export function CluesSection() {
           {temporalClues.map((clue) => (
             <div
               key={clue.id}
-              className="flex items-start justify-between bg-gray-900/30 p-3 rounded border border-orange-400/20"
+              className="flex items-start justify-between bg-black/10 backdrop-blur-md p-3 rounded border border-orange-400/20"
             >
               <span className="text-orange-100 font-mono text-sm flex-1 mr-2">{clue.text}</span>
               <Button

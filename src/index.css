@@ -84,6 +84,15 @@
       background-position: 0 50px;
     }
   }
+
+  @keyframes gridMove {
+    0% {
+      transform: perspective(500px) rotateX(60deg) translateY(0);
+    }
+    100% {
+      transform: perspective(500px) rotateX(60deg) translateY(60px);
+    }
+  }
 }
 
 /* Hide scrollbar */
@@ -100,9 +109,9 @@
 /* Estilos personalizados para la estética glassmorphism */
 @layer components {
   .retro-card {
-    @apply backdrop-blur-xl rounded-2xl p-5 md:p-7 transition-all duration-300;
-    @apply bg-black/30 border border-white/10;
-    @apply shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)];
+    @apply backdrop-blur-2xl rounded-2xl p-5 md:p-7 transition-all duration-300;
+    @apply bg-black/20 border border-white/20;
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),0_0_40px_rgba(255,20,147,0.05)];
   }
 
   .retro-heading {

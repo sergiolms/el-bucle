@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: '/',
+  base: '/el-bucle/',
   plugins: [
     react(),
     VitePWA({
@@ -18,8 +18,8 @@ export default defineConfig({
         background_color: '#000000',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/el-bucle/',
+        start_url: '/el-bucle/',
         icons: [
           {
             src: '/icon-192x192.png',
@@ -39,28 +39,28 @@ export default defineConfig({
             name: 'Personaje',
             short_name: 'Personaje',
             description: 'Ver atributos y estado del personaje',
-            url: '/?tab=character',
+            url: '/el-bucle/?tab=character',
             icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Equipo',
             short_name: 'Equipo',
             description: 'Gestionar inventario y pistas',
-            url: '/?tab=equipment',
+            url: '/el-bucle/?tab=equipment',
             icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Combate',
             short_name: 'Combate',
             description: 'Sistema de combate',
-            url: '/?tab=combat',
+            url: '/el-bucle/?tab=combat',
             icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Notas',
             short_name: 'Notas',
             description: 'Sistema de investigación y notas',
-            url: '/?tab=notes',
+            url: '/el-bucle/?tab=notes',
             icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
           }
         ]

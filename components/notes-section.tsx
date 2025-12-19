@@ -36,10 +36,10 @@ export function NotesSection() {
             const noteHasContent = hasContent(note)
 
             return (
-              <div key={note.id} className="bg-gray-900/30 rounded border border-yellow-400/20 overflow-hidden">
+              <div key={note.id} className="bg-black/10 backdrop-blur-md rounded border border-yellow-400/20 overflow-hidden">
                 <Collapsible defaultOpen={true}>
                   {/* Header de la nota */}
-                  <div className="flex items-center justify-between p-4 bg-gray-900/50">
+                  <div className="flex items-center justify-between p-4 bg-black/15 backdrop-blur-md">
                     <CollapsibleTrigger className="flex items-center gap-2 text-yellow-400 font-mono text-sm hover:text-yellow-300 transition-colors">
                       <ChevronDown className="w-4 h-4" />
                       <span>NOTA #{note.id.slice(-4)}</span>
@@ -74,7 +74,7 @@ export function NotesSection() {
                             value={note.what}
                             onChange={(e) => updateNote(note.id, { what: e.target.value })}
                             placeholder="¿Qué o quién está involucrado?"
-                            className="bg-gray-900/50 border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
+                            className="bg-black/15 backdrop-blur-md border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
                           />
                         </div>
 
@@ -85,7 +85,7 @@ export function NotesSection() {
                             value={note.where}
                             onChange={(e) => updateNote(note.id, { where: e.target.value })}
                             placeholder="¿Dónde ocurrió o se encontró?"
-                            className="bg-gray-900/50 border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
+                            className="bg-black/15 backdrop-blur-md border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
                           />
                         </div>
 
@@ -96,7 +96,7 @@ export function NotesSection() {
                             value={note.when}
                             onChange={(e) => updateNote(note.id, { when: e.target.value })}
                             placeholder="¿Cuándo sucedió?"
-                            className="bg-gray-900/50 border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
+                            className="bg-black/15 backdrop-blur-md border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
                           />
                         </div>
 
@@ -107,7 +107,7 @@ export function NotesSection() {
                             value={note.other}
                             onChange={(e) => updateNote(note.id, { other: e.target.value })}
                             placeholder="Información adicional..."
-                            className="bg-gray-900/50 border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
+                            className="bg-black/15 backdrop-blur-md border-yellow-400 text-yellow-100 placeholder-yellow-400/50 font-mono text-sm min-h-[80px] resize-none"
                           />
                         </div>
                       </div>
