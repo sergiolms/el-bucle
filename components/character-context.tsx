@@ -1,6 +1,9 @@
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useState, useCallback, useEffect } from "react"
+import { useAuth } from "@/src/lib/useAuth"
+import { useFirestoreSync } from "@/src/lib/useFirestoreSync"
+import { FirebaseCharacterService } from "@/src/lib/firebaseService"
 
 export interface Weapon {
   id: string
@@ -125,88 +128,48 @@ const CharacterContext = createContext<CharacterContextType | undefined>(undefin
 
 export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const [character, setCharacter] = useState<CharacterData>(defaultCharacter)
+  const [initialized, setInitialized] = useState(false)
+  const { user } = useAuth()
 
-  // Cargar datos del localStorage al inicializar
+  // Cargar datos iniciales solo una vez
   useEffect(() => {
-    const saved = localStorage.getItem("el-bucle-character")
-    if (saved) {
-      try {
-        const loadedData = JSON.parse(saved)
-        // Migrar datos antiguos si es necesario
-        if (loadedData.items && loadedData.items.length > 0 && typeof loadedData.items[0] === "string") {
-          loadedData.items = loadedData.items.map((item: string, index: number) => ({
-            id: `item-${index}-${Date.now()}`,
-            name: item,
-            locked: false,
-          }))
-        }
-        // Migrar armas sin campo locked
-        if (loadedData.weapons && loadedData.weapons.length > 0 && loadedData.weapons[0].locked === undefined) {
-          loadedData.weapons = loadedData.weapons.map((weapon: any) => ({
-            ...weapon,
-            locked: false,
-          }))
-        }
-        // Migrar armas sin campos elementales
-        if (loadedData.weapons && loadedData.weapons.length > 0 && loadedData.weapons[0].elementalType === undefined) {
-          loadedData.weapons = loadedData.weapons.map((weapon: any) => ({
-            ...weapon,
-            elementalType: "none",
-            elementalDamage: 0,
-          }))
-        }
-        // Añadir campos de combate si no existen
-        if (!loadedData.enemies) loadedData.enemies = []
-        if (!loadedData.selectedWeaponId) loadedData.selectedWeaponId = null
-        if (!loadedData.lastPlayerRoll) loadedData.lastPlayerRoll = null
-        if (loadedData.useElementalDamage === undefined) loadedData.useElementalDamage = false
+    if (initialized) return
 
-        // Migrar enemigos sin nuevos campos
-        if (loadedData.enemies && loadedData.enemies.length > 0) {
-          loadedData.enemies = loadedData.enemies.map((enemy: any) => ({
-            id: enemy.id,
-            body: enemy.body || 0,
-            maxLife: enemy.maxLife || 1,
-            currentLife: enemy.currentLife || enemy.maxLife || 1,
-            weaponDamage: enemy.weaponBonus || enemy.weaponDamage || 0,
-            elementalType: enemy.elementalType || "none",
-            elementalDamage: enemy.elementalDamage || 0,
-            useElementalDamage: enemy.useElementalDamage || false,
-            lastRoll: enemy.lastRoll || null,
-            // Remover campos antiguos
-            name: undefined,
-            weaponName: undefined,
-            weaponBonus: undefined,
-          }))
-        }
-
-        // Add migration for currentSection
-        if (loadedData.currentSection === undefined) {
-          loadedData.currentSection = ""
-        }
-
-        // Add migration for credits
-        if (loadedData.credits === undefined) {
-          loadedData.credits = 0
-        }
-
-        setCharacter(loadedData)
-      } catch (error) {
-        console.error("Error loading character data:", error)
-      }
+    const localData = FirebaseCharacterService.loadFromLocalStorage()
+    if (localData) {
+      setCharacter(localData.character)
     }
+    setInitialized(true)
+  }, [initialized])
+
+  // Callback for Firestore updates (memoizado y estable)
+  const handleFirestoreUpdate = useCallback((data: CharacterData) => {
+    setCharacter(prevCharacter => {
+      // Solo actualizar si los datos son realmente diferentes
+      const prevData = JSON.stringify(prevCharacter)
+      const newData = JSON.stringify(data)
+
+      if (prevData === newData) {
+        return prevCharacter // No cambiar si son iguales
+      }
+
+      return data
+    })
   }, [])
 
-  // Guardar en localStorage cuando cambie el personaje
-  useEffect(() => {
-    localStorage.setItem("el-bucle-character", JSON.stringify(character))
-  }, [character])
+  // Firestore sync (solo si hay usuario)
+  useFirestoreSync({
+    userId: user?.uid || null,
+    character,
+    onUpdate: handleFirestoreUpdate
+  })
 
-  const updateCharacter = (updates: Partial<CharacterData>) => {
+  // Memoizar updateCharacter para evitar re-renders
+  const updateCharacter = useCallback((updates: Partial<CharacterData>) => {
     setCharacter((prev) => ({ ...prev, ...updates }))
-  }
+  }, [])
 
-  const addItem = (itemName: string) => {
+  const addItem = useCallback((itemName: string) => {
     if (itemName.trim()) {
       const newItem: InventoryItem = {
         id: `item-${Date.now()}`,
@@ -218,25 +181,26 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
         items: [...prev.items, newItem],
       }))
     }
-  }
+  }, [])
 
-  const removeItem = (id: string) => {
+  const removeItem = useCallback((id: string) => {
     setCharacter((prev) => ({
       ...prev,
       items: prev.items.filter((item) => item.id !== id),
     }))
-  }
+  }, [])
 
-  const toggleItemLock = (id: string) => {
+  const toggleItemLock = useCallback((id: string) => {
     setCharacter((prev) => ({
       ...prev,
       items: prev.items.map((item) => (item.id === id ? { ...item, locked: !item.locked } : item)),
     }))
-  }
+  }, [])
 
-  const addWeapon = (weapon: Omit<Weapon, "id">) => {
-    if (character.weapons.length < 3) {
-      setCharacter((prev) => ({
+  const addWeapon = useCallback((weapon: Omit<Weapon, "id">) => {
+    setCharacter((prev) => {
+      if (prev.weapons.length >= 3) return prev
+      return {
         ...prev,
         weapons: [
           ...prev.weapons,
@@ -248,31 +212,31 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
             elementalDamage: 0,
           },
         ],
-      }))
-    }
-  }
+      }
+    })
+  }, [])
 
-  const removeWeapon = (id: string) => {
+  const removeWeapon = useCallback((id: string) => {
     setCharacter((prev) => ({
       ...prev,
       weapons: prev.weapons.filter((w) => w.id !== id),
       selectedWeaponId: prev.selectedWeaponId === id ? null : prev.selectedWeaponId,
     }))
-  }
+  }, [])
 
-  const updateWeapon = (id: string, updates: Partial<Weapon>) => {
+  const updateWeapon = useCallback((id: string, updates: Partial<Weapon>) => {
     setCharacter((prev) => ({
       ...prev,
       weapons: prev.weapons.map((w) => (w.id === id ? { ...w, ...updates } : w)),
     }))
-  }
+  }, [])
 
-  const toggleWeaponLock = (id: string) => {
+  const toggleWeaponLock = useCallback((id: string) => {
     setCharacter((prev) => ({
       ...prev,
       weapons: prev.weapons.map((weapon) => (weapon.id === id ? { ...weapon, locked: !weapon.locked } : weapon)),
     }))
-  }
+  }, [])
 
   const addClue = (text: string, type: "normal" | "temporal") => {
     if (text.trim()) {

@@ -1,10 +1,13 @@
 import { CharacterProvider } from "@/components/character-context"
 import { CharacterSheet } from "@/components/character-sheet"
+import { AuthButton } from "@/components/auth-button"
+import { useAuth } from "@/src/lib/useAuth"
 
-export default function App() {
+function AppContent() {
+  const { user } = useAuth()
+
   return (
-    <CharacterProvider>
-      <div className="min-h-screen relative transition-colors duration-300 bg-gradient-to-b from-black via-retro-darkBlue to-black overflow-hidden">
+    <div className="min-h-screen relative transition-colors duration-300 bg-gradient-to-b from-black via-retro-darkBlue to-black overflow-hidden">
         {/* Animated retro grid */}
         <div className="absolute inset-0 opacity-50 pointer-events-none"
              style={{
@@ -35,6 +38,11 @@ export default function App() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-retro-purple/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
 
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl relative z-10">
+          {/* Auth Button - Top Right */}
+          <div className="absolute top-4 right-4 z-20">
+            <AuthButton isLoggedIn={!!user} />
+          </div>
+
           <header className="text-center mb-6 sm:mb-8">
             <div className="relative inline-block mb-4">
               {/* Scanlines effect */}
@@ -98,6 +106,13 @@ export default function App() {
           </footer>
         </div>
       </div>
+  )
+}
+
+export default function App() {
+  return (
+    <CharacterProvider>
+      <AppContent />
     </CharacterProvider>
   )
 }
