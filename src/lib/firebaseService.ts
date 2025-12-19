@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, Unsubscribe } from 'firebase/firestore'
-import { db } from './firebase'
+import { db, isFirebaseConfigured } from './firebase'
 import { CharacterData } from '@/components/character-context'
 
 const CHARACTERS_COLLECTION = 'characters'
@@ -25,6 +25,11 @@ export class FirebaseCharacterService {
    * Obtiene el documento de un personaje desde Firestore
    */
   static async getCharacter(userId: string): Promise<CharacterData | null> {
+    if (!isFirebaseConfigured || !db) {
+      console.warn('Firebase not configured')
+      return null
+    }
+
     try {
       const docRef = doc(db, CHARACTERS_COLLECTION, userId)
       const docSnap = await getDoc(docRef)
@@ -47,6 +52,11 @@ export class FirebaseCharacterService {
    * Guarda o actualiza un personaje en Firestore
    */
   static async saveCharacter(userId: string, character: CharacterData): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+      console.warn('Firebase not configured')
+      return
+    }
+
     try {
       const docRef = doc(db, CHARACTERS_COLLECTION, userId)
       const docSnap = await getDoc(docRef)
@@ -69,6 +79,11 @@ export class FirebaseCharacterService {
    * Actualiza campos específicos de un personaje en Firestore
    */
   static async updateCharacter(userId: string, updates: Partial<CharacterData>): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+      console.warn('Firebase not configured')
+      return
+    }
+
     try {
       const docRef = doc(db, CHARACTERS_COLLECTION, userId)
       await updateDoc(docRef, {
@@ -85,6 +100,11 @@ export class FirebaseCharacterService {
    * Elimina un personaje de Firestore
    */
   static async deleteCharacter(userId: string): Promise<void> {
+    if (!isFirebaseConfigured || !db) {
+      console.warn('Firebase not configured')
+      return
+    }
+
     try {
       const docRef = doc(db, CHARACTERS_COLLECTION, userId)
       await deleteDoc(docRef)
@@ -102,6 +122,11 @@ export class FirebaseCharacterService {
     onUpdate: (character: CharacterData) => void,
     onError?: (error: Error) => void
   ): Unsubscribe {
+    if (!isFirebaseConfigured || !db) {
+      console.warn('Firebase not configured')
+      return () => {} // Return empty unsubscribe function
+    }
+
     const docRef = doc(db, CHARACTERS_COLLECTION, userId)
 
     return onSnapshot(
@@ -220,6 +245,8 @@ export class FirebaseCharacterService {
 
       // Si hay datos en ambas fuentes, usar el más reciente por timestamp
       if (localData && firestoreDoc) {
+        if (!db) return localData.character
+
         const firestoreTimestamp = new Date((await getDoc(doc(db, CHARACTERS_COLLECTION, userId))).data()?.updatedAt || 0).getTime()
 
         // Si localStorage no tiene timestamp, significa que puede ser data antigua
@@ -252,6 +279,10 @@ export class FirebaseCharacterService {
    * Verifica si un usuario tiene datos guardados en Firestore
    */
   static async hasCharacter(userId: string): Promise<boolean> {
+    if (!isFirebaseConfigured || !db) {
+      return false
+    }
+
     try {
       const docRef = doc(db, CHARACTERS_COLLECTION, userId)
       const docSnap = await getDoc(docRef)

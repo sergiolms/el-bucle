@@ -13,9 +13,14 @@ interface AuthButtonProps {
 }
 
 export function AuthButton({ isLoggedIn }: AuthButtonProps) {
-  const { user, loading, signInWithGoogle, signOut } = useAuth()
+  const { user, loading, signInWithGoogle, signOut, isFirebaseConfigured } = useAuth()
 
   if (loading) {
+    return null
+  }
+
+  if (!isFirebaseConfigured) {
+    console.warn('⚠️ AuthButton: Firebase not configured')
     return null
   }
 

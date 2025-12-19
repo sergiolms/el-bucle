@@ -1,12 +1,12 @@
 import { useEffect, useCallback, useRef, useState } from 'react'
 import { enableIndexedDbPersistence } from 'firebase/firestore'
-import { db } from './firebase'
+import { db, isFirebaseConfigured } from './firebase'
 import { CharacterData } from '@/components/character-context'
 import { FirebaseCharacterService } from './firebaseService'
 
 // Enable offline persistence (solo se ejecuta una vez)
 let persistenceEnabled = false
-if (!persistenceEnabled) {
+if (!persistenceEnabled && isFirebaseConfigured && db) {
   enableIndexedDbPersistence(db).catch((err) => {
     if (err.code === 'failed-precondition') {
       console.warn('⚠️ Múltiples pestañas abiertas, la persistencia solo funciona en una.')
@@ -31,7 +31,7 @@ export function useFirestoreSync({ userId, character, onUpdate }: UseFirestoreSy
 
   // Sincronizar al iniciar sesión (solo una vez)
   useEffect(() => {
-    if (!userId || synced) return
+    if (!isFirebaseConfigured || !userId || synced) return
 
     const initialSync = async () => {
       const syncedCharacter = await FirebaseCharacterService.syncWithLocalStorage(userId)
@@ -48,7 +48,7 @@ export function useFirestoreSync({ userId, character, onUpdate }: UseFirestoreSy
 
   // Escuchar cambios en tiempo real de Firestore (solo si está logueado)
   useEffect(() => {
-    if (!userId || !synced) return
+    if (!isFirebaseConfigured || !userId || !synced) return
 
     const unsubscribe = FirebaseCharacterService.subscribeToCharacter(
       userId,
@@ -100,8 +100,8 @@ export function useFirestoreSync({ userId, character, onUpdate }: UseFirestoreSy
         // Siempre guardar en localStorage
         FirebaseCharacterService.saveToLocalStorage(character)
 
-        // Si está logueado, también guardar en Firestore
-        if (userId && synced) {
+        // Si está logueado y Firebase configurado, también guardar en Firestore
+        if (isFirebaseConfigured && userId && synced) {
           await FirebaseCharacterService.saveCharacter(userId, character)
           console.log('💾 Guardado: localStorage + Firestore')
         } else {

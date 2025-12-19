@@ -1,7 +1,7 @@
-import { initializeApp } from "firebase/app"
-import { getAnalytics } from "firebase/analytics"
-import { getFirestore } from "firebase/firestore"
-import { getAuth } from "firebase/auth"
+import { initializeApp, type FirebaseApp } from "firebase/app"
+import { getAnalytics, type Analytics } from "firebase/analytics"
+import { getFirestore, type Firestore } from "firebase/firestore"
+import { getAuth, type Auth } from "firebase/auth"
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,12 +13,34 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+const isFirebaseConfigured = !!(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId
+)
 
-// Initialize services
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null
-export const db = getFirestore(app)
-export const auth = getAuth(app)
+let app: FirebaseApp | null = null
+let analytics: Analytics | null = null
+let db: Firestore | null = null
+let auth: Auth | null = null
 
+if (isFirebaseConfigured) {
+  try {
+    // Initialize Firebase
+    app = initializeApp(firebaseConfig)
+
+    // Initialize services
+    analytics = typeof window !== 'undefined' ? getAnalytics(app) : null
+    db = getFirestore(app)
+    auth = getAuth(app)
+
+    console.log('✅ Firebase initialized successfully')
+  } catch (error) {
+    console.error('❌ Error initializing Firebase:', error)
+  }
+} else {
+  console.warn('⚠️ Firebase not configured - Auth features will be disabled')
+}
+
+export { analytics, db, auth, isFirebaseConfigured }
 export default app

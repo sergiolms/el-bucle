@@ -6,7 +6,7 @@ import {
   User,
   GoogleAuthProvider
 } from 'firebase/auth'
-import { auth } from './firebase'
+import { auth, isFirebaseConfigured } from './firebase'
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -15,7 +15,11 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Escuchar cambios en el estado de autenticación
+    if (!isFirebaseConfigured || !auth) {
+      setLoading(false)
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
       setLoading(false)
@@ -25,6 +29,11 @@ export function useAuth() {
   }, [])
 
   const signInWithGoogle = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      console.warn('⚠️ Firebase no está configurado')
+      throw new Error('Firebase not configured')
+    }
+
     try {
       const result = await signInWithPopup(auth, googleProvider)
       console.log('✅ Login exitoso:', result.user.displayName || result.user.email)
@@ -36,6 +45,11 @@ export function useAuth() {
   }
 
   const signOut = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      console.warn('⚠️ Firebase no está configurado')
+      return
+    }
+
     try {
       await firebaseSignOut(auth)
       console.log('✅ Logout exitoso')
@@ -45,5 +59,5 @@ export function useAuth() {
     }
   }
 
-  return { user, loading, signInWithGoogle, signOut }
+  return { user, loading, signInWithGoogle, signOut, isFirebaseConfigured }
 }
