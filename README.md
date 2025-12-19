@@ -1,80 +1,151 @@
-# El Bucle - Ficha de Personaje
+```
+███████╗██╗         ██████╗ ██╗   ██╗ ██████╗██╗     ███████╗
+██╔════╝██║         ██╔══██╗██║   ██║██╔════╝██║     ██╔════╝
+█████╗  ██║         ██████╔╝██║   ██║██║     ██║     █████╗
+██╔══╝  ██║         ██╔══██╗██║   ██║██║     ██║     ██╔══╝
+███████╗███████╗    ██████╔╝╚██████╔╝╚██████╗███████╗███████╗
+╚══════╝╚══════╝    ╚═════╝  ╚═════╝  ╚═════╝╚══════╝╚══════╝
+```
 
-Aplicación PWA (Progressive Web App) para gestionar fichas de personaje del librojuego "El Bucle" con estética cyberpunk.
+<div align="center">
 
-## Características
+**[ FICHA DE PERSONAJE DIGITAL ]**
 
-- **PWA Instalable**: Funciona como una aplicación nativa en dispositivos móviles y escritorio
-- **Offline First**: Funciona sin conexión una vez instalada
-- **Persistencia Local**: Los datos se guardan automáticamente en el navegador
-- **Diseño Cyberpunk**: Interfaz con estética futurista y neón
-- **Responsive**: Adaptada para móviles, tablets y escritorio
+*Sistema de gestión de personaje para el librojuego "El Bucle"*
 
-## Tecnologías
+[![Visita la web](https://img.shields.io/badge/▶_VISITA_LA_WEB-FF1493?style=for-the-badge&labelColor=000000)](https://www.puntodeheroe.com/elbucle.html)
+[![Abrir ficha](https://img.shields.io/badge/🎮_ABRIR_FICHA-00D9FF?style=for-the-badge&labelColor=000000)](https://sergiolms.github.io/el-bucle/)
 
-- **React 18**: Librería de UI
-- **Vite**: Build tool y dev server
-- **TypeScript**: Tipado estático
-- **Tailwind CSS**: Estilos utility-first
-- **shadcn/ui**: Componentes UI basados en Radix UI
-- **vite-plugin-pwa**: Configuración PWA
+---
 
-## Instalación
+</div>
+
+## `> CONEXIÓN_ESTABLECIDA`
+
+**El Bucle** es un librojuego donde cada decisión importa y el tiempo corre en tu contra. Esta aplicación es tu compañera digital para gestionar tu personaje mientras navegas por las calles de neón de una ciudad distópica.
+
+**🎮 [JUEGA AL LIBROJUEGO AQUÍ](https://www.puntodeheroe.com/elbucle.html)**
+
+### `[ CARACTERÍSTICAS_DEL_SISTEMA ]`
+
+```
+┌─────────────────────────────────────────┐
+│ ✓ PWA INSTALABLE                        │
+│   └─ Funciona como app nativa           │
+│                                          │
+│ ✓ MODO OFFLINE                           │
+│   └─ Sin conexión, sin problemas        │
+│                                          │
+│ ✓ AUTO-SAVE                              │
+│   └─ Persistencia automática en local   │
+│                                          │
+│ ✓ DISEÑO CYBERPUNK                       │
+│   └─ Estética retro-futurista neón      │
+│                                          │
+│ ✓ RESPONSIVE                             │
+│   └─ Móvil • Tablet • Desktop           │
+└─────────────────────────────────────────┘
+```
+
+### `[ MÓDULOS_ACTIVOS ]`
+
+- **PERSONAJE** → Gestión de atributos (Body, Mind, Gesta, Status) y control de tiempo
+- **EQUIPO** → Inventario de items, arsenal de armas y banco de pistas
+- **COMBATE** → Sistema de enfrentamientos con múltiples enemigos
+- **NOTAS** → Sistema de investigación y anotaciones estructuradas
+
+---
+
+## `> INSTALACIÓN_LOCAL`
+
+### **Requisitos del Sistema**
+```bash
+Node.js >= 18.x
+npm >= 9.x
+```
+
+### **Secuencia de Inicio**
 
 ```bash
+# Clonar repositorio
+git clone https://github.com/sergiolms/el-bucle.git
+cd el-bucle
+
 # Instalar dependencias
-pnpm install
+npm install
 
-# Modo desarrollo
-pnpm dev
+# Iniciar servidor de desarrollo
+npm run dev
 
-# Build de producción
-pnpm build
-
-# Preview de producción
-pnpm preview
+# La aplicación estará disponible en:
+# → http://localhost:5173
 ```
 
-## Estructura del Proyecto
+---
 
+## `> INSTALAR_COMO_PWA`
+
+La aplicación puede instalarse como una app nativa:
+
+### **📱 Android**
 ```
-el-bucle/
-├── src/
-│   ├── App.tsx           # Componente principal
-│   ├── main.tsx          # Punto de entrada
-│   ├── index.css         # Estilos globales
-│   └── vite-env.d.ts     # Tipos de Vite
-├── components/           # Componentes React
-│   ├── character-context.tsx  # Estado global
-│   ├── character-sheet.tsx    # Componente principal
-│   ├── attributes-section.tsx # Sección atributos
-│   ├── inventory-section.tsx  # Sección inventario
-│   ├── combat-section.tsx     # Sección combate
-│   ├── clues-section.tsx      # Sección pistas
-│   ├── time-section.tsx       # Sección tiempo
-│   ├── notes-section.tsx      # Sección notas
-│   └── ui/                    # Componentes UI
-├── hooks/                # Custom hooks
-├── lib/                  # Utilidades
-├── public/               # Assets estáticos
-├── index.html           # HTML principal
-├── vite.config.ts       # Configuración Vite
-└── tailwind.config.ts   # Configuración Tailwind
+Chrome → Menú (⋮) → "Agregar a pantalla de inicio"
 ```
 
-## PWA
+### **🍎 iOS**
+```
+Safari → Compartir (⎙) → "Agregar a pantalla de inicio"
+```
 
-La aplicación se puede instalar como PWA en:
+### **💻 Desktop**
+```
+Chrome/Edge → Icono de instalación (⊕) en la barra de direcciones
+```
 
-- **Android**: Chrome -> Menú -> "Agregar a pantalla de inicio"
-- **iOS**: Safari -> Compartir -> "Agregar a pantalla de inicio"
-- **Desktop**: Chrome/Edge -> Icono de instalación en la barra de direcciones
+Una vez instalada, funcionará offline y tendrás acceso directo desde tu dispositivo.
 
-## Funcionalidades
+---
 
-1. **Personaje**: Gestión de atributos (Body, Mind, Gesta, Status) y control de tiempo
-2. **Equipo**: Inventario de items, armas y pistas
-3. **Combate**: Sistema de combate con múltiples enemigos
-4. **Notas**: Sistema de investigación con notas estructuradas
+## `> PERSISTENCIA_DE_DATOS`
 
-Todos los datos se guardan automáticamente en localStorage.
+Todos los datos se guardan automáticamente en `localStorage`:
+- ✓ Atributos del personaje
+- ✓ Inventario completo
+- ✓ Estado de combate
+- ✓ Pistas recolectadas
+- ✓ Notas de investigación
+
+**No se requiere cuenta ni conexión a internet.**
+
+---
+
+## `> SOPORTE_Y_CONTRIBUCIONES`
+
+Encontraste un bug? Tienes una idea?
+
+- 🐛 **Issues**: [Reportar problema](https://github.com/sergiolms/el-bucle/issues)
+- 💡 **Pull Requests**: Contribuciones bienvenidas
+
+---
+
+## `> LICENCIA`
+
+Este proyecto está bajo licencia MIT. Ver archivo `LICENSE` para más detalles.
+
+---
+
+<div align="center">
+
+```
+┌─────────────────────────────────────────┐
+│                                          │
+│    [ SYSTEM_READY • AWAITING_INPUT ]    │
+│                                          │
+│    Desarrollado con ❤️ y neón           │
+│                                          │
+└─────────────────────────────────────────┘
+```
+
+**[▶ JUGAR AL LIBROJUEGO](https://www.puntodeheroe.com/elbucle.html)** • **[🎮 ABRIR FICHA](https://sergiolms.github.io/el-bucle/)**
+
+</div>

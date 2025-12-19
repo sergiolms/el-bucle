@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         name: 'El Bucle - Ficha de Personaje',
         short_name: 'El Bucle',
-        description: 'Aplicación para gestionar fichas de personaje del librojuego El Bucle con estética cyberpunk',
+        description: 'Aplicación para gestionar fichas de personaje del librojuego El Bucle',
         theme_color: '#ff00ff',
         background_color: '#000000',
         display: 'standalone',
