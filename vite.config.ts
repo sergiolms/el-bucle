@@ -22,13 +22,13 @@ export default defineConfig({
         start_url: '/el-bucle/',
         icons: [
           {
-            src: '/icon-192x192.png',
+            src: '/el-bucle/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/icon-512x512.png',
+            src: '/el-bucle/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -40,28 +40,28 @@ export default defineConfig({
             short_name: 'Personaje',
             description: 'Ver atributos y estado del personaje',
             url: '/el-bucle/?tab=character',
-            icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/el-bucle/icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Equipo',
             short_name: 'Equipo',
             description: 'Gestionar inventario y pistas',
             url: '/el-bucle/?tab=equipment',
-            icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/el-bucle/icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Combate',
             short_name: 'Combate',
             description: 'Sistema de combate',
             url: '/el-bucle/?tab=combat',
-            icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/el-bucle/icon-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'Notas',
             short_name: 'Notas',
             description: 'Sistema de investigación y notas',
             url: '/el-bucle/?tab=notes',
-            icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/el-bucle/icon-192x192.png', sizes: '192x192' }]
           }
         ]
       },
