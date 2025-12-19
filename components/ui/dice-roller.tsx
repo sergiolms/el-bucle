@@ -6,7 +6,7 @@ interface DiceRollerProps {
   displayValue: number | null
   isRolling: boolean
   onRoll: () => void
-  color: 'green' | 'orange'
+  color: 'green' | 'orange' | 'purple'
   size?: 'small' | 'large'
   disabled?: boolean
 }
@@ -29,6 +29,15 @@ const colorClasses = {
     textShadow: '0 0 15px rgba(205, 92, 92, 0.8), 0 0 30px rgba(205, 92, 92, 0.4)',
     ping: 'bg-retro-orange/30',
     button: 'from-retro-orange/50 to-red-500/40 hover:from-retro-orange/60 hover:to-red-500/50 border-retro-orange/60 shadow-[0_4px_16px_rgba(205,92,92,0.3)] hover:shadow-[0_6px_24px_rgba(205,92,92,0.5)]'
+  },
+  purple: {
+    bg: 'from-retro-purple/20 to-retro-purple/5',
+    border: 'border-retro-purple/40',
+    shadow: 'shadow-[0_8px_32px_rgba(160,32,240,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]',
+    text: 'text-retro-purple',
+    textShadow: '0 0 20px rgba(160, 32, 240, 0.8), 0 0 40px rgba(160, 32, 240, 0.4)',
+    ping: 'bg-retro-purple/30',
+    button: 'from-retro-purple/50 to-retro-purple/30 hover:from-retro-purple/60 hover:to-retro-purple/40 border-retro-purple/60 shadow-[0_4px_20px_rgba(160,32,240,0.3)] hover:shadow-[0_6px_30px_rgba(160,32,240,0.5)]'
   }
 }
 
