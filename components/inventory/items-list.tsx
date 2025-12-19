@@ -42,18 +42,37 @@ export function ItemsList({ items, onAdd, onRemove, onToggleLock }: ItemsListPro
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center justify-between p-2 bg-black/20 rounded border border-cyan-400/20"
+            className={`flex items-center justify-between p-2 rounded border transition-all ${
+              item.locked
+                ? 'bg-yellow-500/10 border-yellow-400/50 shadow-[0_0_8px_rgba(250,204,21,0.2)]'
+                : 'bg-black/20 border-cyan-400/20'
+            }`}
           >
             <div className="flex items-center gap-2 flex-1">
-              <Package className="w-4 h-4 text-cyan-400 flex-shrink-0" />
-              <span className="text-cyan-100 font-mono text-sm">{item.name}</span>
+              <div className="relative">
+                <Package className={`w-4 h-4 flex-shrink-0 ${item.locked ? 'text-yellow-400' : 'text-cyan-400'}`} />
+                {item.locked && (
+                  <Lock className="w-2.5 h-2.5 text-yellow-400 absolute -top-1 -right-1" />
+                )}
+              </div>
+              <span className={`font-mono text-sm ${item.locked ? 'text-yellow-100 font-semibold' : 'text-cyan-100'}`}>
+                {item.name}
+              </span>
+              {item.locked && (
+                <span className="text-xs text-yellow-400/70 font-mono ml-1">[PROTEGIDO]</span>
+              )}
             </div>
             <div className="flex gap-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onToggleLock(item.id)}
-                className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/20 p-1"
+                className={`p-1 transition-all ${
+                  item.locked
+                    ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/20'
+                    : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/20'
+                }`}
+                title={item.locked ? 'Desbloquear' : 'Bloquear'}
               >
                 {item.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
               </Button>
@@ -62,6 +81,8 @@ export function ItemsList({ items, onAdd, onRemove, onToggleLock }: ItemsListPro
                 size="sm"
                 onClick={() => onRemove(item.id)}
                 className="text-red-400 hover:text-red-300 hover:bg-red-400/20 p-1"
+                disabled={item.locked}
+                title={item.locked ? 'No se puede borrar (bloqueado)' : 'Eliminar'}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
