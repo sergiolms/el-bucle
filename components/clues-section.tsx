@@ -19,8 +19,13 @@ export function CluesSection() {
   const temporalClues = character.clues.filter((c) => c.type === "temporal")
 
   return (
-    <div className="bg-gray-800/50 border border-green-500/30 rounded-lg p-6 backdrop-blur-sm">
-      <h2 className="text-2xl font-mono font-bold text-green-400 mb-6 text-center">PISTAS</h2>
+    <div className="retro-card border-retro-yellow">
+      <div className="relative mb-6">
+        <h2 className="retro-heading text-xl sm:text-2xl text-center text-retro-yellow">
+          PISTAS
+        </h2>
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-retro-yellow to-transparent"></div>
+      </div>
 
       {/* Añadir nueva pista */}
       <div className="mb-6 p-4 bg-gray-900/30 rounded border border-green-400/20">

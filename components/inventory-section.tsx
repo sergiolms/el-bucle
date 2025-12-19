@@ -66,14 +66,19 @@ export function InventorySection() {
   }
 
   return (
-    <div className="bg-gray-800/50 border border-cyan-500/30 rounded-lg p-6 backdrop-blur-sm">
-      <h2 className="text-2xl font-mono font-bold text-cyan-400 mb-6 text-center">INVENTARIO</h2>
+    <div className="retro-card border-retro-cyan">
+      <div className="relative mb-6">
+        <h2 className="retro-heading text-xl sm:text-2xl text-center text-retro-cyan">
+          INVENTARIO
+        </h2>
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-28 h-1 bg-gradient-to-r from-transparent via-retro-cyan to-transparent"></div>
+      </div>
 
       {/* Créditos */}
-      <div className="mb-6 p-4 bg-gray-900/30 rounded border border-purple-400/20">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <DollarSign className="w-5 h-5 text-purple-400" />
-          <label className="text-purple-400 font-mono text-lg">CRÉDITOS</label>
+      <div className="mb-6 p-3 sm:p-4 bg-black/30 rounded-sm border-2 border-retro-green/50">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-retro-green animate-neon-pulse" />
+          <label className="text-retro-green font-display text-xs sm:text-sm tracking-wider">CRÉDITOS</label>
         </div>
         <Input
           type="number"
@@ -96,29 +101,29 @@ export function InventorySection() {
             }
           }}
           placeholder="0"
-          className="bg-gray-900/50 border-purple-400 text-purple-100 placeholder-purple-400/50 font-mono text-center"
+          className="retro-input text-retro-green border-retro-green placeholder-retro-green/40 text-center text-base sm:text-lg font-retro"
         />
-        <div className="mt-2 text-xs text-purple-400/70 font-mono flex items-center justify-center gap-1">
+        <div className="mt-2 text-[10px] sm:text-xs text-retro-green/70 font-mono flex items-center justify-center gap-1">
           Se restablecen en el reset diario
         </div>
       </div>
 
       {/* Objetos */}
       <div className="mb-6">
-        <h3 className="text-lg font-mono text-cyan-300 mb-3">OBJETOS</h3>
+        <h3 className="text-base sm:text-lg font-display text-retro-cyan mb-3 tracking-wider">OBJETOS</h3>
         <div className="flex gap-2 mb-3">
           <Input
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
             placeholder="Nuevo objeto..."
-            className="bg-gray-900/50 border-cyan-400 text-cyan-100 placeholder-cyan-400/50 font-mono"
+            className="retro-input text-retro-cyan border-retro-cyan placeholder-retro-cyan/40 text-sm sm:text-base"
             onKeyPress={(e) => e.key === "Enter" && handleAddItem()}
           />
-          <Button onClick={handleAddItem} className="bg-cyan-500 hover:bg-cyan-600 text-black">
-            <Plus className="w-4 h-4" />
+          <Button onClick={handleAddItem} className="bg-gradient-to-r from-retro-cyan to-retro-blue text-black font-display border-2 border-retro-cyan shadow-[0_0_10px_rgba(0,217,255,0.4)] hover:shadow-[0_0_20px_rgba(0,217,255,0.6)] px-3 sm:px-4">
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
         </div>
-        <div className="space-y-2 max-h-40 overflow-y-auto">
+        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
           {character.items.map((item) => (
             <div
               key={item.id}

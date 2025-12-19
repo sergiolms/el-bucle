@@ -4,26 +4,27 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --radius: 0.5rem;
+    /* Dark theme - Noir cyberpunk */
+    --background: 260 100% 5%;
+    --foreground: 300 100% 95%;
+    --card: 260 50% 8%;
+    --card-foreground: 300 100% 95%;
+    --popover: 260 50% 8%;
+    --popover-foreground: 300 100% 95%;
+    --primary: 330 100% 50%;
+    --primary-foreground: 300 100% 95%;
+    --secondary: 280 80% 50%;
+    --secondary-foreground: 300 100% 95%;
+    --muted: 260 30% 20%;
+    --muted-foreground: 300 20% 70%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 260 100% 5%;
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 300 100% 95%;
+    --border: 330 80% 40%;
+    --input: 260 30% 18%;
+    --ring: 330 100% 50%;
+    --radius: 0.25rem;
   }
 }
 
@@ -33,11 +34,112 @@
   }
   body {
     @apply bg-background text-foreground;
+    position: relative;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* CRT Scanline effect */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    animation: scanlines 8s linear infinite;
+  }
+
+  /* Vignette effect */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at center,
+      transparent 0%,
+      rgba(26, 0, 51, 0.4) 100%
+    );
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  @keyframes scanlines {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 0 50px;
+    }
   }
 }
 
-/* Estilos personalizados para la estética cyberpunk */
+/* Hide scrollbar */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Estilos personalizados para la estética glassmorphism */
 @layer components {
+  .retro-card {
+    @apply backdrop-blur-xl rounded-2xl p-5 md:p-7 transition-all duration-300;
+    @apply bg-black/30 border border-white/10;
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)];
+  }
+
+  .retro-heading {
+    @apply font-display text-retro-pink uppercase tracking-wider;
+    text-shadow:
+      0 0 5px rgba(255, 0, 128, 0.4),
+      0 0 10px rgba(255, 0, 128, 0.2);
+  }
+
+  .retro-text {
+    @apply font-mono text-retro-cyan;
+    text-shadow: 0 0 3px rgba(0, 217, 255, 0.3);
+  }
+
+  .retro-input {
+    @apply bg-black/40 backdrop-blur-md border border-white/20 text-retro-cyan font-mono rounded-lg;
+    @apply focus:border-retro-pink/60 focus:shadow-[0_0_20px_rgba(255,20,147,0.2),inset_0_1px_0_rgba(255,255,255,0.1)];
+    @apply transition-all duration-300;
+  }
+
+  .retro-button {
+    @apply bg-gradient-to-br from-retro-pink/40 to-retro-purple/40 text-white font-mono uppercase;
+    @apply border border-retro-pink/40 shadow-[0_4px_16px_rgba(255,20,147,0.2),inset_0_1px_0_rgba(255,255,255,0.1)];
+    @apply hover:shadow-[0_6px_24px_rgba(255,20,147,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] hover:scale-105;
+    @apply active:scale-95 transition-all duration-200 backdrop-blur-md rounded-lg;
+  }
+
+  .grid-background {
+    background-image:
+      linear-gradient(rgba(255, 0, 128, 0.1) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(255, 0, 128, 0.1) 2px, transparent 2px),
+      linear-gradient(rgba(160, 32, 240, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 32, 240, 0.05) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+  }
+
   .neon-glow {
     filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 10px currentColor);
   }
@@ -53,23 +155,25 @@
   }
 }
 
-/* Scrollbar personalizado */
+/* Scrollbar personalizado estilo 80s */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-left: 2px solid rgba(255, 0, 128, 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #ff00ff, #00ffff);
-  border-radius: 4px;
+  background: linear-gradient(180deg, #ff0080, #a020f0);
+  border: 2px solid rgba(255, 0, 128, 0.5);
+  box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00);
+  background: linear-gradient(180deg, #ff0080, #a020f0, #00d9ff);
+  box-shadow: 0 0 15px rgba(255, 0, 128, 0.8);
 }
 
 /* Animaciones de entrada */

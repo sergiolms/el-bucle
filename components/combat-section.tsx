@@ -27,6 +27,12 @@ export function CombatSection() {
     useElementalDamage: false,
   })
 
+  // Dice animation states
+  const [isPlayerRolling, setIsPlayerRolling] = useState(false)
+  const [playerDiceDisplay, setPlayerDiceDisplay] = useState<number | null>(null)
+  const [rollingEnemies, setRollingEnemies] = useState<Set<string>>(new Set())
+  const [enemyDiceDisplay, setEnemyDiceDisplay] = useState<Record<string, number>>({})
+
   const handleAddEnemy = () => {
     addEnemy(newEnemy)
     setNewEnemy({
@@ -40,11 +46,41 @@ export function CombatSection() {
   }
 
   const handlePlayerRoll = () => {
-    rollPlayerDice()
+    setIsPlayerRolling(true)
+    setPlayerDiceDisplay(null)
+
+    // Simulate rolling animation
+    let rolls = 0
+    const interval = setInterval(() => {
+      setPlayerDiceDisplay(Math.floor(Math.random() * 6) + 1)
+      rolls++
+      if (rolls >= 12) {
+        clearInterval(interval)
+        rollPlayerDice() // This updates character.lastPlayerRoll
+        setIsPlayerRolling(false)
+      }
+    }, 100)
   }
 
   const handleEnemyRoll = (enemyId: string) => {
-    rollEnemyDice(enemyId)
+    setRollingEnemies(prev => new Set(prev).add(enemyId))
+    setEnemyDiceDisplay(prev => ({ ...prev, [enemyId]: 0 }))
+
+    // Simulate rolling animation
+    let rolls = 0
+    const interval = setInterval(() => {
+      setEnemyDiceDisplay(prev => ({ ...prev, [enemyId]: Math.floor(Math.random() * 6) + 1 }))
+      rolls++
+      if (rolls >= 12) {
+        clearInterval(interval)
+        rollEnemyDice(enemyId) // This updates enemy.lastRoll
+        setRollingEnemies(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(enemyId)
+          return newSet
+        })
+      }
+    }, 100)
   }
 
   const getSelectedWeapon = () => {
@@ -99,10 +135,16 @@ export function CombatSection() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       {/* Panel del Jugador */}
-      <div className="bg-gray-800/50 border border-green-500/30 rounded-lg p-6 backdrop-blur-sm">
-        <h2 className="text-2xl font-mono font-bold text-green-400 mb-6 text-center">JUGADOR</h2>
+      <div className="retro-card border-retro-green">
+        <div className="relative mb-6">
+          <h2 className="retro-heading text-xl sm:text-2xl text-center text-retro-green">
+            <User className="inline-block w-5 h-5 sm:w-6 sm:h-6 mr-2 animate-neon-pulse" />
+            JUGADOR
+          </h2>
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-retro-green to-transparent"></div>
+        </div>
 
         {/* Selector de Arma */}
         <div className="mb-6">
@@ -111,10 +153,10 @@ export function CombatSection() {
             value={character.selectedWeaponId || "none"}
             onValueChange={(value) => updateCharacter({ selectedWeaponId: value === "none" ? null : value })}
           >
-            <SelectTrigger className="bg-gray-900/50 border-green-400 text-green-100 font-mono">
+            <SelectTrigger className="retro-input text-retro-green border-retro-green">
               <SelectValue placeholder="Sin arma" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-green-400">
+            <SelectContent className="bg-black border-2 border-retro-green">
               <SelectItem value="none" className="text-green-100 font-mono">
                 Sin arma (+0)
               </SelectItem>
@@ -162,19 +204,41 @@ export function CombatSection() {
           </div>
         )}
 
-        {/* Tirada de Dados */}
-        <div className="text-center">
+        {/* Tirada de Dados con visualización */}
+        <div className="text-center space-y-4">
+          {/* Visual Dice Display */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className={`w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-retro-green/20 to-retro-green/5 backdrop-blur-md border-2 border-retro-green/40 rounded-2xl flex items-center justify-center shadow-[0_8px_32px_rgba(60,179,113,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-300 ${isPlayerRolling ? 'animate-bounce scale-110' : ''}`}>
+                {(isPlayerRolling ? playerDiceDisplay : character.lastPlayerRoll) !== null ? (
+                  <span className="text-5xl sm:text-6xl font-bold font-retro text-retro-green"
+                        style={{ textShadow: '0 0 20px rgba(60, 179, 113, 0.8), 0 0 40px rgba(60, 179, 113, 0.4)' }}>
+                    {isPlayerRolling ? playerDiceDisplay : character.lastPlayerRoll}
+                  </span>
+                ) : (
+                  <Dice6 className="w-12 h-12 sm:w-14 sm:h-14 text-retro-green/50" />
+                )}
+              </div>
+              {/* Glow effect when rolling */}
+              {isPlayerRolling && (
+                <div className="absolute inset-0 rounded-2xl bg-retro-green/30 animate-ping"></div>
+              )}
+            </div>
+          </div>
+
+          {/* Roll Button */}
           <Button
             onClick={handlePlayerRoll}
-            className="bg-green-500 hover:bg-green-600 text-black font-mono font-bold px-8 py-4 text-lg mb-4"
+            disabled={isPlayerRolling}
+            className="bg-gradient-to-br from-retro-green/50 to-retro-green/30 hover:from-retro-green/60 hover:to-retro-green/40 text-white font-mono font-bold px-8 py-4 text-lg border-2 border-retro-green/60 shadow-[0_4px_20px_rgba(60,179,113,0.3)] hover:shadow-[0_6px_30px_rgba(60,179,113,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-md rounded-xl"
           >
             <Dice6 className="w-6 h-6 mr-2" />
-            TIRAR DADO
+            {isPlayerRolling ? 'LANZANDO...' : 'TIRAR DADO'}
           </Button>
 
-          {character.lastPlayerRoll && (
-            <div className="bg-gray-900/30 border border-green-400/20 rounded-lg p-4">
-              <div className="text-green-400 font-mono text-sm mb-2">RESULTADO</div>
+          {character.lastPlayerRoll && !isPlayerRolling && (
+            <div className="bg-black/20 dark:bg-black/30 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <div className="text-retro-green/80 font-mono text-sm mb-2 uppercase tracking-wider">Resultado del Combate</div>
               <div className="flex items-center justify-center gap-2 text-lg font-mono font-bold flex-wrap">
                 <span className="text-pink-400">Cuerpo: {character.body}</span>
                 <span className="text-green-300">+</span>
@@ -211,8 +275,14 @@ export function CombatSection() {
       </div>
 
       {/* Panel de Enemigos */}
-      <div className="bg-gray-800/50 border border-red-500/30 rounded-lg p-6 backdrop-blur-sm">
-        <h2 className="text-2xl font-mono font-bold text-red-400 mb-6 text-center">ENEMIGOS</h2>
+      <div className="retro-card border-retro-orange">
+        <div className="relative mb-6">
+          <h2 className="retro-heading text-xl sm:text-2xl text-center text-retro-orange">
+            <Skull className="inline-block w-5 h-5 sm:w-6 sm:h-6 mr-2 animate-neon-pulse" />
+            ENEMIGOS
+          </h2>
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-28 h-1 bg-gradient-to-r from-transparent via-retro-orange to-transparent"></div>
+        </div>
 
         {/* Añadir Enemigo */}
         <div className="mb-6 p-4 bg-gray-900/30 rounded border border-red-400/20">
@@ -475,20 +545,41 @@ export function CombatSection() {
                   </div>
                 )}
 
-                {/* Tirada del Enemigo */}
-                <div className="text-center">
+                {/* Tirada del Enemigo con visualización */}
+                <div className="text-center space-y-3">
+                  {/* Visual Dice Display for Enemy */}
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-retro-orange/20 to-red-500/10 backdrop-blur-md border-2 border-retro-orange/40 rounded-xl flex items-center justify-center shadow-[0_4px_16px_rgba(205,92,92,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-300 ${rollingEnemies.has(enemy.id) ? 'animate-bounce scale-110' : ''}`}>
+                        {(rollingEnemies.has(enemy.id) ? enemyDiceDisplay[enemy.id] : enemy.lastRoll) ? (
+                          <span className="text-3xl sm:text-4xl font-bold font-retro text-retro-orange"
+                                style={{ textShadow: '0 0 15px rgba(205, 92, 92, 0.8), 0 0 30px rgba(205, 92, 92, 0.4)' }}>
+                            {rollingEnemies.has(enemy.id) ? enemyDiceDisplay[enemy.id] : enemy.lastRoll}
+                          </span>
+                        ) : (
+                          <Dice6 className="w-8 h-8 sm:w-10 sm:h-10 text-retro-orange/50" />
+                        )}
+                      </div>
+                      {/* Glow effect when rolling */}
+                      {rollingEnemies.has(enemy.id) && (
+                        <div className="absolute inset-0 rounded-xl bg-retro-orange/30 animate-ping"></div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Roll Button */}
                   <Button
                     onClick={() => handleEnemyRoll(enemy.id)}
-                    disabled={enemy.currentLife <= 0}
-                    className="bg-red-600 hover:bg-red-700 text-white font-mono font-bold mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={enemy.currentLife <= 0 || rollingEnemies.has(enemy.id)}
+                    className="bg-gradient-to-br from-retro-orange/50 to-red-500/40 hover:from-retro-orange/60 hover:to-red-500/50 text-white font-mono font-bold text-sm px-4 py-2 border-2 border-retro-orange/60 shadow-[0_4px_16px_rgba(205,92,92,0.3)] hover:shadow-[0_6px_24px_rgba(205,92,92,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-md rounded-lg w-full"
                   >
                     <Dice6 className="w-4 h-4 mr-1" />
-                    TIRAR
+                    {rollingEnemies.has(enemy.id) ? 'LANZANDO...' : 'TIRAR'}
                   </Button>
 
-                  {enemy.lastRoll && (
-                    <div className="bg-gray-900/50 border border-red-400/20 rounded p-2">
-                      <div className="flex items-center justify-center gap-1 text-sm font-mono flex-wrap">
+                  {enemy.lastRoll && !rollingEnemies.has(enemy.id) && (
+                    <div className="bg-black/20 dark:bg-black/30 backdrop-blur-md border border-white/10 rounded-lg p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                      <div className="flex items-center justify-center gap-1 text-xs sm:text-sm font-mono flex-wrap">
                         <span className="text-pink-400">Cuerpo: {enemy.body}</span>
                         <span className="text-red-300">+</span>
                         {enemy.useElementalDamage && enemy.elementalType !== "none" ? (

@@ -24,36 +24,39 @@ export function CharacterSheet() {
   return (
     <div className="w-full max-w-6xl mx-auto">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8 bg-gray-900/50 border border-pink-500/30 p-1 rounded-lg">
-          <TabsTrigger
-            value="character"
-            className="data-[state=active]:bg-pink-500/20 data-[state=active]:text-pink-400 data-[state=active]:border-pink-400 text-pink-300 font-mono font-bold border border-transparent hover:border-pink-400/50 transition-all duration-200"
-          >
-            <User className="w-4 h-4 mr-2" />
-            PERSONAJE
-          </TabsTrigger>
-          <TabsTrigger
-            value="equipment"
-            className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 data-[state=active]:border-cyan-400 text-cyan-300 font-mono font-bold border border-transparent hover:border-cyan-400/50 transition-all duration-200"
-          >
-            <Package className="w-4 h-4 mr-2" />
-            EQUIPO
-          </TabsTrigger>
-          <TabsTrigger
-            value="combat"
-            className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 data-[state=active]:border-red-400 text-red-300 font-mono font-bold border border-transparent hover:border-red-400/50 transition-all duration-200"
-          >
-            <Swords className="w-4 h-4 mr-2" />
-            COMBATE
-          </TabsTrigger>
-          <TabsTrigger
-            value="notes"
-            className="data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-400 data-[state=active]:border-yellow-400 text-yellow-300 font-mono font-bold border border-transparent hover:border-yellow-400/50 transition-all duration-200"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            NOTAS
-          </TabsTrigger>
-        </TabsList>
+        {/* Scrollable tabs container for mobile */}
+        <div className="relative mb-6 sm:mb-8">
+          <TabsList className="flex w-full overflow-x-auto overflow-y-hidden gap-0 bg-black/40 backdrop-blur-md border border-white/10 p-0 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] scrollbar-hide">
+            <TabsTrigger
+              value="character"
+              className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-retro-pink/30 data-[state=active]:to-retro-pink/10 data-[state=active]:text-retro-pink data-[state=active]:border-retro-pink/40 data-[state=active]:shadow-[0_0_12px_rgba(255,20,147,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] text-retro-pink/60 font-mono text-sm sm:text-base uppercase border border-l-0 border-white/5 hover:border-retro-pink/20 hover:text-retro-pink/90 hover:bg-white/5 transition-all duration-300 py-3 px-4 sm:px-6 rounded-none first:rounded-l-xl flex items-center justify-center gap-2.5 whitespace-nowrap backdrop-blur-sm flex-shrink-0 flex-1"
+            >
+              <User className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>PERSONAJE</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="equipment"
+              className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-retro-cyan/30 data-[state=active]:to-retro-cyan/10 data-[state=active]:text-retro-cyan data-[state=active]:border-retro-cyan/40 data-[state=active]:shadow-[0_0_12px_rgba(32,178,170,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] text-retro-cyan/60 font-mono text-sm sm:text-base uppercase border border-white/5 hover:border-retro-cyan/20 hover:text-retro-cyan/90 hover:bg-white/5 transition-all duration-300 py-3 px-4 sm:px-6 rounded-none flex items-center justify-center gap-2.5 whitespace-nowrap backdrop-blur-sm flex-shrink-0 flex-1"
+            >
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>EQUIPO</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="combat"
+              className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-retro-orange/30 data-[state=active]:to-retro-orange/10 data-[state=active]:text-retro-orange data-[state=active]:border-retro-orange/40 data-[state=active]:shadow-[0_0_12px_rgba(205,92,92,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] text-retro-orange/60 font-mono text-sm sm:text-base uppercase border border-white/5 hover:border-retro-orange/20 hover:text-retro-orange/90 hover:bg-white/5 transition-all duration-300 py-3 px-4 sm:px-6 rounded-none flex items-center justify-center gap-2.5 whitespace-nowrap backdrop-blur-sm flex-shrink-0 flex-1"
+            >
+              <Swords className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>COMBATE</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="notes"
+              className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-retro-yellow/30 data-[state=active]:to-retro-yellow/10 data-[state=active]:text-retro-yellow data-[state=active]:border-retro-yellow/40 data-[state=active]:shadow-[0_0_12px_rgba(218,165,32,0.25),inset_0_1px_0_rgba(255,255,255,0.1)] text-retro-yellow/60 font-mono text-sm sm:text-base uppercase border border-r-0 border-white/5 hover:border-retro-yellow/20 hover:text-retro-yellow/90 hover:bg-white/5 transition-all duration-300 py-3 px-4 sm:px-6 rounded-none last:rounded-r-xl flex items-center justify-center gap-2.5 whitespace-nowrap backdrop-blur-sm flex-shrink-0 flex-1"
+            >
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>NOTAS</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="character" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -13,14 +13,17 @@ export function NotesSection() {
   }
 
   return (
-    <div className="bg-gray-800/50 border border-yellow-500/30 rounded-lg p-6 backdrop-blur-sm">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-mono font-bold text-yellow-400 flex items-center gap-2">
-          <FileText className="w-6 h-6" />
-          NOTAS DE INVESTIGACIÓN
-        </h2>
-        <Button onClick={addNote} className="bg-yellow-500 hover:bg-yellow-600 text-black">
-          <Plus className="w-4 h-4 mr-1" />
+    <div className="retro-card border-retro-yellow">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-3">
+        <div className="relative">
+          <h2 className="retro-heading text-lg sm:text-xl md:text-2xl text-center sm:text-left flex items-center gap-2 text-retro-yellow">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 animate-neon-pulse" />
+            NOTAS DE INVESTIGACIÓN
+          </h2>
+          <div className="absolute -bottom-2 left-0 right-0 sm:left-1/4 sm:right-auto h-1 w-full sm:w-48 bg-gradient-to-r from-transparent via-retro-yellow to-transparent"></div>
+        </div>
+        <Button onClick={addNote} className="retro-button text-xs sm:text-sm">
+          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
           Nueva
         </Button>
       </div>
