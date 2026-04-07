@@ -166,17 +166,21 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
 
   // Handlers for conflict resolution
   const handleSelectLocal = useCallback(async () => {
-    if (!conflictData || !conflictData.localData || !user) return
+    if (!conflictData || !user) return
 
-    // Use local data
-    setCharacter(conflictData.localData)
-
-    // Save to Firestore and localStorage
-    await FirebaseCharacterService.saveCharacter(user.uid, conflictData.localData)
-    FirebaseCharacterService.saveToLocalStorage(conflictData.localData, Date.now())
+    if (conflictData.localData) {
+      // Data mismatch: use local data
+      setCharacter(conflictData.localData)
+      await FirebaseCharacterService.saveCharacter(user.uid, conflictData.localData)
+      FirebaseCharacterService.saveToLocalStorage(conflictData.localData, Date.now())
+    } else {
+      // Cloud recovery declined: keep current state, sync it to cloud
+      await FirebaseCharacterService.saveCharacter(user.uid, character)
+      FirebaseCharacterService.saveToLocalStorage(character, Date.now())
+    }
 
     setConflictData(null)
-  }, [conflictData, user])
+  }, [conflictData, user, character])
 
   const handleSelectCloud = useCallback(async () => {
     if (!conflictData || !conflictData.cloudData) return
@@ -434,8 +438,12 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
       {/* Data conflict modal */}
       <DataConflictModal
         isOpen={!!conflictData}
+        conflictType={conflictData?.conflictType}
         localData={conflictData?.localData || null}
         cloudData={conflictData?.cloudData || character}
+        localTimestamp={conflictData?.localTimestamp}
+        cloudTimestamp={conflictData?.cloudTimestamp}
+        changedFields={conflictData?.changedFields}
         onSelectLocal={handleSelectLocal}
         onSelectCloud={handleSelectCloud}
       />

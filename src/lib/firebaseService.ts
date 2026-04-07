@@ -20,8 +20,12 @@ export interface CharacterWithTimestamp {
 export interface SyncResult {
   character: CharacterData
   hasConflict: boolean
+  conflictType?: 'cloud-recovery' | 'data-mismatch'
   localData?: CharacterData
   cloudData?: CharacterData
+  localTimestamp?: number
+  cloudTimestamp?: string
+  changedFields?: string[]
 }
 
 /**
@@ -219,35 +223,106 @@ export class FirebaseCharacterService {
   }
 
   /**
+   * Gets a character from Firestore including the updatedAt timestamp
+   */
+  static async getCharacterWithTimestamp(userId: string): Promise<{
+    character: CharacterData
+    updatedAt: string | null
+  } | null> {
+    if (!isFirebaseConfigured || !db) return null
+
+    try {
+      const docRef = doc(db, CHARACTERS_COLLECTION, userId)
+      const docSnap = await getDoc(docRef)
+
+      if (docSnap.exists()) {
+        const data = docSnap.data() as CharacterDocument
+        const { userId: _, createdAt: __, updatedAt, ...characterData } = data
+        return { character: characterData, updatedAt: updatedAt || null }
+      }
+      return null
+    } catch (error) {
+      console.error('Error getting character from Firestore:', error)
+      return null
+    }
+  }
+
+  /**
+   * Stringifies an array of objects with `id`, sorting by id and
+   * sorting each object's keys to produce a stable string regardless
+   * of property order (e.g. from Firestore roundtrips).
+   */
+  private static stableArrayStringify(items: { id: string }[]): string {
+    const sorted = [...items].sort((a, b) => a.id.localeCompare(b.id))
+    return JSON.stringify(sorted.map(item =>
+      Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)))
+    ))
+  }
+
+  /**
+   * Compares two CharacterData objects field by field.
+   * Returns whether they are equal and which fields differ.
+   */
+  static compareCharacterData(
+    a: CharacterData,
+    b: CharacterData
+  ): { isEqual: boolean; changedFields: string[] } {
+    const changedFields: string[] = []
+
+    if (a.body !== b.body) changedFields.push('body')
+    if (a.mind !== b.mind) changedFields.push('mind')
+    if (a.gesta !== b.gesta) changedFields.push('gesta')
+    if (a.status !== b.status) changedFields.push('status')
+    if (a.credits !== b.credits) changedFields.push('credits')
+    if (a.day !== b.day) changedFields.push('day')
+    if (a.hour !== b.hour) changedFields.push('hour')
+    if (a.selectedWeaponId !== b.selectedWeaponId) changedFields.push('selectedWeaponId')
+    if (a.lastPlayerRoll !== b.lastPlayerRoll) changedFields.push('lastPlayerRoll')
+    if (a.useElementalDamage !== b.useElementalDamage) changedFields.push('useElementalDamage')
+    if (a.currentSection !== b.currentSection) changedFields.push('currentSection')
+
+    if (this.stableArrayStringify(a.items) !== this.stableArrayStringify(b.items)) changedFields.push('items')
+    if (this.stableArrayStringify(a.weapons) !== this.stableArrayStringify(b.weapons)) changedFields.push('weapons')
+    if (this.stableArrayStringify(a.clues) !== this.stableArrayStringify(b.clues)) changedFields.push('clues')
+    if (this.stableArrayStringify(a.notes) !== this.stableArrayStringify(b.notes)) changedFields.push('notes')
+    if (this.stableArrayStringify(a.enemies) !== this.stableArrayStringify(b.enemies)) changedFields.push('enemies')
+
+    return {
+      isEqual: changedFields.length === 0,
+      changedFields
+    }
+  }
+
+  /**
    * Synchronizes data between localStorage and Firestore
-   * Detects conflicts when both have data
-   * RULE: If there's no local data, ALWAYS use Firestore (don't overwrite it)
+   * Detects conflicts by comparing actual data content (not timestamps)
    */
   static async syncWithLocalStorage(userId: string): Promise<SyncResult | null> {
     try {
-      // Get data from both sources
       const localData = this.loadFromLocalStorage()
-      const firestoreDoc = await this.getCharacter(userId)
+      const firestoreResult = await this.getCharacterWithTimestamp(userId)
 
-      // If there's no data in either source
-      if (!localData && !firestoreDoc) {
+      // Case 1: No data in either source
+      if (!localData && !firestoreResult) {
         console.log('📭 No data to synchronize')
         return null
       }
 
-      // ⚠️ IMPORTANT: If there's no local data but YES in Firestore, ALWAYS use Firestore
-      // (User may have lost their local data)
-      if (!localData && firestoreDoc) {
-        console.log('📥 Recovering data from Firestore (localStorage empty)')
-        this.saveToLocalStorage(firestoreDoc, Date.now())
+      // Case 2: No local data, cloud exists → Inform user
+      if (!localData && firestoreResult) {
+        console.log('📥 Cloud data found but no local data - asking user')
         return {
-          character: firestoreDoc,
-          hasConflict: false
+          character: firestoreResult.character,
+          hasConflict: true,
+          conflictType: 'cloud-recovery',
+          cloudData: firestoreResult.character,
+          cloudTimestamp: firestoreResult.updatedAt || undefined,
+          changedFields: []
         }
       }
 
-      // If there's only local data, upload it to Firestore
-      if (localData && !firestoreDoc) {
+      // Case 3: Local data exists, no cloud → Upload silently
+      if (localData && !firestoreResult) {
         console.log('📤 Uploading local data to Firestore (first sync)')
         await this.saveCharacter(userId, localData.character)
         return {
@@ -256,54 +331,32 @@ export class FirebaseCharacterService {
         }
       }
 
-      // If there's data in both sources, detect conflict
-      if (localData && firestoreDoc) {
-        if (!db) return {
-          character: localData.character,
-          hasConflict: false
-        }
+      // Case 4: Both exist → Compare actual data content
+      if (localData && firestoreResult) {
+        const { isEqual, changedFields } = this.compareCharacterData(
+          localData.character,
+          firestoreResult.character
+        )
 
-        const firestoreTimestamp = new Date((await getDoc(doc(db, CHARACTERS_COLLECTION, userId))).data()?.updatedAt || 0).getTime()
-
-        // If localStorage has no timestamp, THERE'S A CONFLICT
-        // We can't determine which is more recent
-        if (!localData.timestamp || localData.timestamp === 0) {
-          console.log('⚠️ CONFLICT: localStorage without timestamp')
+        if (isEqual) {
+          console.log('✅ Local and cloud data are identical')
+          this.saveToLocalStorage(firestoreResult.character, Date.now())
           return {
-            character: firestoreDoc, // Temporary default
-            hasConflict: true,
-            localData: localData.character,
-            cloudData: firestoreDoc
-          }
-        }
-
-        // If timestamps are very different (more than 10 seconds), THERE'S A CONFLICT
-        const timeDiff = Math.abs(localData.timestamp - firestoreTimestamp)
-        if (timeDiff > 10000) { // 10 seconds
-          console.log('⚠️ CONFLICT: Different data detected')
-          return {
-            character: firestoreDoc, // Temporary default
-            hasConflict: true,
-            localData: localData.character,
-            cloudData: firestoreDoc
-          }
-        }
-
-        // If they're similar in timestamp, use the most recent automatically
-        if (localData.timestamp > firestoreTimestamp) {
-          console.log('🔄 Local data more recent, uploading to Firestore')
-          await this.saveCharacter(userId, localData.character)
-          return {
-            character: localData.character,
+            character: firestoreResult.character,
             hasConflict: false
           }
-        } else {
-          console.log('🔄 Firestore data more recent, downloading')
-          this.saveToLocalStorage(firestoreDoc, firestoreTimestamp)
-          return {
-            character: firestoreDoc,
-            hasConflict: false
-          }
+        }
+
+        console.log('⚠️ CONFLICT: Data content differs in fields:', changedFields)
+        return {
+          character: firestoreResult.character,
+          hasConflict: true,
+          conflictType: 'data-mismatch',
+          localData: localData.character,
+          cloudData: firestoreResult.character,
+          localTimestamp: localData.timestamp || undefined,
+          cloudTimestamp: firestoreResult.updatedAt || undefined,
+          changedFields
         }
       }
 
