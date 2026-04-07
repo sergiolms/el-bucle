@@ -103,6 +103,14 @@ function AppContent() {
             <p className="font-mono text-retro-purple/50 text-xs sm:text-sm">
               [ SYSTEM READY ]
             </p>
+            <a
+              href="https://buymeacoffee.com/sergiolms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-2 font-mono text-[10px] sm:text-xs text-retro-cyan/50 hover:text-retro-cyan/80 transition-colors duration-300"
+            >
+              ¿Te gusta la app? Invítame a un café ☕
+            </a>
           </footer>
         </div>
       </div>
