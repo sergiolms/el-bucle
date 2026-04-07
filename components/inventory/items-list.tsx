@@ -67,7 +67,7 @@ export function ItemsList({ items, onAdd, onRemove, onToggleLock }: ItemsListPro
                 variant="ghost"
                 size="sm"
                 onClick={() => onToggleLock(item.id)}
-                className={`p-1 transition-all ${
+                className={`h-11 w-11 p-0 transition-all ${
                   item.locked
                     ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/20'
                     : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/20'
@@ -80,7 +80,7 @@ export function ItemsList({ items, onAdd, onRemove, onToggleLock }: ItemsListPro
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemove(item.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 p-1"
+                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0"
                 disabled={item.locked}
                 title={item.locked ? 'No se puede borrar (bloqueado)' : 'Eliminar'}
               >

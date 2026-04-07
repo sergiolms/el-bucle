@@ -59,7 +59,7 @@ export function EnemyCard({
             variant="ghost"
             size="sm"
             onClick={() => onUpdateLife(-1)}
-            className="text-red-400 hover:bg-red-400/20 w-6 h-6 p-0"
+            className="text-red-400 hover:bg-red-400/20 w-11 h-11 p-0"
           >
             -
           </Button>
@@ -70,7 +70,7 @@ export function EnemyCard({
             variant="ghost"
             size="sm"
             onClick={() => onUpdateLife(1)}
-            className="text-red-400 hover:bg-red-400/20 w-6 h-6 p-0"
+            className="text-red-400 hover:bg-red-400/20 w-11 h-11 p-0"
           >
             +
           </Button>
@@ -87,7 +87,7 @@ export function EnemyCard({
             variant="ghost"
             size="sm"
             onClick={() => onUpdateBody(-1)}
-            className="text-pink-400 hover:bg-pink-400/20 w-6 h-6 p-0"
+            className="text-pink-400 hover:bg-pink-400/20 w-11 h-11 p-0"
           >
             -
           </Button>
@@ -96,7 +96,7 @@ export function EnemyCard({
             variant="ghost"
             size="sm"
             onClick={() => onUpdateBody(1)}
-            className="text-pink-400 hover:bg-pink-400/20 w-6 h-6 p-0"
+            className="text-pink-400 hover:bg-pink-400/20 w-11 h-11 p-0"
           >
             +
           </Button>

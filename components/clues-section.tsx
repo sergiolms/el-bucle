@@ -90,7 +90,7 @@ export function CluesSection() {
                 variant="ghost"
                 size="sm"
                 onClick={() => removeClue(clue.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 p-1 flex-shrink-0"
+                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0 flex-shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -128,7 +128,7 @@ export function CluesSection() {
                 variant="ghost"
                 size="sm"
                 onClick={() => removeClue(clue.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 p-1 flex-shrink-0"
+                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0 flex-shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

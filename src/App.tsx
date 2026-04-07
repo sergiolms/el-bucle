@@ -7,7 +7,7 @@ function AppContent() {
   const { user } = useAuth()
 
   return (
-    <div className="min-h-screen relative transition-colors duration-300 bg-gradient-to-b from-black via-retro-darkBlue to-black overflow-hidden">
+    <div className="min-h-screen relative transition-colors duration-300 bg-gradient-to-b from-black via-retro-darkBlueLighter to-black overflow-hidden">
         {/* Animated retro grid */}
         <div className="absolute inset-0 opacity-50 pointer-events-none"
              style={{
@@ -33,9 +33,9 @@ function AppContent() {
         />
 
         {/* Floating neon accents */}
-        <div className="absolute top-20 left-10 w-96 h-96 bg-retro-pink/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-retro-cyan/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-retro-purple/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 hidden sm:block w-96 h-96 bg-retro-pink/8 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 hidden sm:block w-96 h-96 bg-retro-cyan/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 hidden sm:block -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-retro-purple/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
 
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl relative z-10" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}>
           {/* Top controls bar */}
@@ -100,7 +100,7 @@ function AppContent() {
           {/* Footer decoration */}
           <footer className="mt-8 sm:mt-12 text-center">
             <div className="h-px bg-gradient-to-r from-transparent via-retro-pink/30 to-transparent mb-4"></div>
-            <p className="font-mono text-retro-purple/50 text-xs sm:text-sm">
+            <p className="font-mono text-retro-purple/60 text-xs sm:text-sm">
               [ SYSTEM READY ]
             </p>
             <a

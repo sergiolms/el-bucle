@@ -26,7 +26,7 @@ export function AttributeCounter({
           variant="outline"
           size="sm"
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="retro-button text-xs p-0 w-7 h-7 sm:w-8 sm:h-8"
+          className="retro-button text-xs p-0 w-11 h-11 sm:w-12 sm:h-12"
         >
           <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
         </Button>
@@ -40,7 +40,7 @@ export function AttributeCounter({
           variant="outline"
           size="sm"
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="retro-button text-xs p-0 w-7 h-7 sm:w-8 sm:h-8"
+          className="retro-button text-xs p-0 w-11 h-11 sm:w-12 sm:h-12"
         >
           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
         </Button>

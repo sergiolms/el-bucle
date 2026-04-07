@@ -65,6 +65,7 @@ const config: Config = {
           green: "#3cb371",     // Medium sea green
           darkPurple: "#1a0033",
           darkBlue: "#0a0a0f",  // Más oscuro para noir
+          darkBlueLighter: "#12121f",
         },
         neon: {
           pink: "#ff00ff",

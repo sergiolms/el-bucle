@@ -41,7 +41,7 @@ export function TimeSection() {
             variant="outline"
             size="sm"
             onClick={() => updateCharacter({ day: Math.max(1, character.day - 1) })}
-            className="retro-button text-xs p-0 w-8 h-8 sm:w-10 sm:h-10"
+            className="retro-button text-xs p-0 w-11 h-11 sm:w-12 sm:h-12"
           >
             <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
@@ -53,7 +53,7 @@ export function TimeSection() {
             variant="outline"
             size="sm"
             onClick={() => updateCharacter({ day: character.day + 1 })}
-            className="retro-button text-xs p-0 w-8 h-8 sm:w-10 sm:h-10"
+            className="retro-button text-xs p-0 w-11 h-11 sm:w-12 sm:h-12"
           >
             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
@@ -73,7 +73,7 @@ export function TimeSection() {
             variant="outline"
             size="sm"
             onClick={() => updateCharacter({ hour: Math.max(8, character.hour - 1) })}
-            className="retro-button text-xs p-0 w-8 h-8 sm:w-10 sm:h-10"
+            className="retro-button text-xs p-0 w-11 h-11 sm:w-12 sm:h-12"
           >
             <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
@@ -85,7 +85,7 @@ export function TimeSection() {
             variant="outline"
             size="sm"
             onClick={() => updateCharacter({ hour: Math.min(23, character.hour + 1) })}
-            className="retro-button text-xs p-0 w-8 h-8 sm:w-10 sm:h-10"
+            className="retro-button text-xs p-0 w-11 h-11 sm:w-12 sm:h-12"
           >
             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>

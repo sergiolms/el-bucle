@@ -49,8 +49,8 @@
     height: 100%;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.15),
-      rgba(0, 0, 0, 0.15) 1px,
+      rgba(0, 0, 0, 0.08),
+      rgba(0, 0, 0, 0.08) 1px,
       transparent 1px,
       transparent 2px
     );
@@ -70,7 +70,8 @@
     background: radial-gradient(
       circle at center,
       transparent 0%,
-      rgba(26, 0, 51, 0.4) 100%
+      transparent 40%,
+      rgba(26, 0, 51, 0.25) 100%
     );
     pointer-events: none;
     z-index: 9998;
@@ -93,6 +94,19 @@
       transform: perspective(500px) rotateX(60deg) translateY(60px);
     }
   }
+
+  @media (max-width: 639px) {
+    body::before {
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.06),
+        rgba(0, 0, 0, 0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      animation: none;
+    }
+  }
 }
 
 /* Hide scrollbar */
@@ -109,9 +123,9 @@
 /* Estilos personalizados para la estética glassmorphism */
 @layer components {
   .retro-card {
-    @apply backdrop-blur-2xl rounded-2xl p-5 md:p-7 transition-all duration-300;
-    @apply bg-black/20 border border-white/20;
-    @apply shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),0_0_40px_rgba(255,20,147,0.05)];
+    @apply backdrop-blur-xl sm:backdrop-blur-2xl rounded-2xl p-5 md:p-7 transition-all duration-300;
+    @apply bg-black/15 border border-white/20;
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),0_0_40px_rgba(255,20,147,0.08)];
   }
 
   .retro-heading {
@@ -127,7 +141,7 @@
   }
 
   .retro-input {
-    @apply bg-black/40 backdrop-blur-md border border-white/20 text-retro-cyan font-mono rounded-lg;
+    @apply bg-black/30 backdrop-blur-md border border-white/20 text-retro-cyan font-mono rounded-lg;
     @apply focus:border-retro-pink/60 focus:shadow-[0_0_20px_rgba(255,20,147,0.2),inset_0_1px_0_rgba(255,255,255,0.1)];
     @apply transition-all duration-300;
   }
