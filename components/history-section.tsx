@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import {
-  ExternalLink,
   CalendarDays,
   Clock3,
   FileText,
   History,
-  MapPinned,
   Package,
   ScrollText,
   ShieldAlert,
@@ -24,7 +22,6 @@ import {
   listHistorySnapshots,
   type HistorySnapshotRecord,
 } from "@/src/features/persistence"
-import { TANIS_MAP_ASSET_PATH, TANIS_MAP_SOURCE_URL } from "@/src/features/history/map-reference"
 
 function formatHour(hour: number) {
   return `${hour.toString().padStart(2, "0")}:00`
@@ -364,31 +361,6 @@ export function HistorySection() {
                 )}
               </SummaryCard>
             </div>
-
-            <SummaryCard title="Mapa de Tanis" icon={<MapPinned className="w-4 h-4" />}>
-              <div className="space-y-3">
-                <div className="rounded-xl overflow-hidden border border-white/10">
-                  <img
-                    src={TANIS_MAP_ASSET_PATH}
-                    alt="Mapa de Tanis"
-                    className="w-full h-auto block"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-xs text-retro-cyan/70">
-                  <span>Referencia visual para las localizaciones del checkpoint.</span>
-                  <a
-                    href={TANIS_MAP_SOURCE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-retro-green hover:text-retro-green/80"
-                  >
-                    Fuente original
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            </SummaryCard>
           </div>
         ) : null}
       </div>

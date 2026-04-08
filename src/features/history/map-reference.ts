@@ -1,5 +1,5 @@
 export const TANIS_MAP_SOURCE_URL = "https://www.puntodeheroe.com/MapaTanis.jpg"
-export const TANIS_MAP_ASSET_PATH = "/assets/mapa-tanis.jpg"
+export const TANIS_MAP_ASSET_PATH = `${import.meta.env.BASE_URL}assets/mapa-tanis.jpg`
 
 export const TANIS_MAP_ZONES = [
   {
