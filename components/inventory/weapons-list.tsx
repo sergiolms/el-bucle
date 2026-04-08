@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button"
 import { Trash2, Lock, Unlock, Sword, Target } from "lucide-react"
 import { getElementalIcon, getElementalColor } from "@/lib/elemental-utils"
 import { AddWeaponForm } from "./add-weapon-form"
 import type { Weapon } from "../character-context"
 import type { ElementalType } from "@/lib/elemental-utils"
+import { IconActionButton } from "@/components/shared/icon-action-button"
+import { ListRow } from "@/components/shared/list-row"
 
 interface WeaponsListProps {
   weapons: Weapon[]
@@ -30,13 +31,10 @@ export function WeaponsList({ weapons, maxWeapons, onAdd, onRemove, onToggleLock
 
       <div className="space-y-3">
         {weapons.map((weapon) => (
-          <div
+          <ListRow
             key={weapon.id}
-            className={`flex items-center justify-between p-3 rounded border transition-all ${
-              weapon.locked
-                ? 'bg-yellow-500/10 border-yellow-400/50 shadow-[0_0_8px_rgba(250,204,21,0.2)]'
-                : 'bg-black/20 border-yellow-400/20'
-            }`}
+            tone="yellow"
+            highlighted={weapon.locked}
           >
             <div className="flex items-center gap-2 flex-1">
               <div className="relative">
@@ -68,31 +66,21 @@ export function WeaponsList({ weapons, maxWeapons, onAdd, onRemove, onToggleLock
               </div>
             </div>
             <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
+              <IconActionButton
                 onClick={() => onToggleLock(weapon.id)}
-                className={`h-11 w-11 p-0 transition-all ${
-                  weapon.locked
-                    ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/20'
-                    : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/20'
-                }`}
+                tone={weapon.locked ? "warning" : "neutral"}
                 title={weapon.locked ? 'Desbloquear' : 'Bloquear'}
-              >
-                {weapon.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
+                icon={weapon.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+              />
+              <IconActionButton
                 onClick={() => onRemove(weapon.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0"
                 disabled={weapon.locked}
                 title={weapon.locked ? 'No se puede borrar (bloqueado)' : 'Eliminar'}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+                tone="danger"
+                icon={<Trash2 className="w-4 h-4" />}
+              />
             </div>
-          </div>
+          </ListRow>
         ))}
         {weapons.length === 0 && (
           <div className="text-center text-yellow-400/50 font-mono py-4">No hay armas</div>

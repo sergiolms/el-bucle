@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { DiceRoller } from "@/components/ui/dice-roller"
 import { getElementalIcon, getElementalColor } from "@/lib/elemental-utils"
 import { Sword, Target } from "lucide-react"
+import { getSelectedWeapon } from "@/src/features/character/selectors"
 
 interface PlayerPanelProps {
   isRolling: boolean
@@ -15,12 +16,8 @@ interface PlayerPanelProps {
 export function PlayerPanel({ isRolling, diceDisplay, onRoll }: PlayerPanelProps) {
   const { character, updateCharacter } = useCharacter()
 
-  const getSelectedWeapon = () => {
-    return character.weapons.find((w) => w.id === character.selectedWeaponId)
-  }
-
   const getPlayerTotal = () => {
-    const selectedWeapon = getSelectedWeapon()
+    const selectedWeapon = getSelectedWeapon(character)
     let weaponDamage = 0
 
     if (selectedWeapon) {
@@ -77,13 +74,13 @@ export function PlayerPanel({ isRolling, diceDisplay, onRoll }: PlayerPanelProps
       </div>
 
       {/* Toggle Daño Elemental */}
-      {getSelectedWeapon() && getSelectedWeapon()?.elementalType !== "none" && (
+      {getSelectedWeapon(character) && getSelectedWeapon(character)?.elementalType !== "none" && (
         <div className="mb-6 p-3 bg-black/10 backdrop-blur-md rounded border border-purple-400/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {getElementalIcon(getSelectedWeapon()?.elementalType || "none")}
-              <span className={`font-mono text-sm ${getElementalColor(getSelectedWeapon()?.elementalType || "none")}`}>
-                Usar daño elemental (+{getSelectedWeapon()?.elementalDamage})
+              {getElementalIcon(getSelectedWeapon(character)?.elementalType || "none")}
+              <span className={`font-mono text-sm ${getElementalColor(getSelectedWeapon(character)?.elementalType || "none")}`}>
+                Usar daño elemental (+{getSelectedWeapon(character)?.elementalDamage})
               </span>
             </div>
             <Switch
@@ -93,7 +90,7 @@ export function PlayerPanel({ isRolling, diceDisplay, onRoll }: PlayerPanelProps
           </div>
           <div className="text-xs text-gray-400 font-mono mt-1">
             {character.useElementalDamage
-              ? `Usando daño ${getSelectedWeapon()?.elementalType} en lugar de daño normal`
+              ? `Usando daño ${getSelectedWeapon(character)?.elementalType} en lugar de daño normal`
               : "Usando daño normal"}
           </div>
         </div>
@@ -116,15 +113,15 @@ export function PlayerPanel({ isRolling, diceDisplay, onRoll }: PlayerPanelProps
           <div className="flex items-center justify-center gap-2 text-lg font-mono font-bold flex-wrap">
             <span className="text-pink-400">Cuerpo: {character.body}</span>
             <span className="text-green-300">+</span>
-            {getSelectedWeapon() && (
+            {getSelectedWeapon(character) && (
               <>
-                {character.useElementalDamage && getSelectedWeapon()?.elementalType !== "none" ? (
-                  <span className={`flex items-center gap-1 ${getElementalColor(getSelectedWeapon()?.elementalType || "none")}`}>
-                    {getElementalIcon(getSelectedWeapon()?.elementalType || "none")}
-                    {getSelectedWeapon()?.elementalDamage}
+                {character.useElementalDamage && getSelectedWeapon(character)?.elementalType !== "none" ? (
+                  <span className={`flex items-center gap-1 ${getElementalColor(getSelectedWeapon(character)?.elementalType || "none")}`}>
+                    {getElementalIcon(getSelectedWeapon(character)?.elementalType || "none")}
+                    {getSelectedWeapon(character)?.elementalDamage}
                   </span>
                 ) : (
-                  <span className="text-yellow-400">Arma: {getSelectedWeapon()?.bonus}</span>
+                  <span className="text-yellow-400">Arma: {getSelectedWeapon(character)?.bonus}</span>
                 )}
                 <span className="text-green-300">+</span>
               </>
@@ -133,11 +130,11 @@ export function PlayerPanel({ isRolling, diceDisplay, onRoll }: PlayerPanelProps
             <span className="text-green-300">=</span>
             <span className="text-green-200 text-2xl">Total: {getPlayerTotal()}</span>
           </div>
-          {getSelectedWeapon() && (
+          {getSelectedWeapon(character) && (
             <div className="text-green-400/70 font-mono text-xs mt-2">
-              Usando: {getSelectedWeapon()?.name}
-              {character.useElementalDamage && getSelectedWeapon()?.elementalType !== "none"
-                ? ` (daño ${getSelectedWeapon()?.elementalType})`
+              Usando: {getSelectedWeapon(character)?.name}
+              {character.useElementalDamage && getSelectedWeapon(character)?.elementalType !== "none"
+                ? ` (daño ${getSelectedWeapon(character)?.elementalType})`
                 : " (daño normal)"}
             </div>
           )}

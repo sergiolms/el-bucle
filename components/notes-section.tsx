@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Plus, Trash2, FileText, ChevronDown } from "lucide-react"
+import { IconActionButton } from "@/components/shared/icon-action-button"
+import type { Note } from "./character-context"
 
 export function NotesSection() {
   const { character, addNote, removeNote, updateNote } = useCharacter()
 
-  const hasContent = (note: any) => {
+  const hasContent = (note: Note) => {
     return note.what.trim() || note.where.trim() || note.when.trim() || note.other.trim()
   }
 
@@ -52,14 +54,11 @@ export function NotesSection() {
                     </CollapsibleTrigger>
 
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <IconActionButton
                         onClick={() => removeNote(note.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-400/20"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                        tone="danger"
+                        icon={<Trash2 className="w-4 h-4" />}
+                      />
                     </div>
                   </div>
 

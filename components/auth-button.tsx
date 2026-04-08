@@ -1,5 +1,5 @@
 import { LogIn, LogOut, Cloud, HardDrive } from "lucide-react"
-import { useAuth } from "@/src/lib/useAuth"
+import { useAuth } from "@/src/features/cloud"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
@@ -9,11 +9,12 @@ import {
 } from "@/components/ui/tooltip"
 
 interface AuthButtonProps {
-  isLoggedIn: boolean
+  isLoggedIn?: boolean
 }
 
 export function AuthButton({ isLoggedIn }: AuthButtonProps) {
   const { user, loading, signInWithGoogle, signOut, isFirebaseConfigured } = useAuth()
+  const loggedIn = isLoggedIn ?? !!user
 
   if (loading) {
     return null
@@ -31,19 +32,19 @@ export function AuthButton({ isLoggedIn }: AuthButtonProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-black/20 backdrop-blur-md border border-white/10">
-              {isLoggedIn ? (
+              {loggedIn ? (
                 <Cloud className="w-4 h-4 text-retro-green animate-pulse" />
               ) : (
                 <HardDrive className="w-4 h-4 text-retro-purple" />
               )}
               <span className="text-xs font-mono text-white/70">
-                {isLoggedIn ? 'Cloud' : 'Local'}
+                {loggedIn ? 'Cloud' : 'Local'}
               </span>
             </div>
           </TooltipTrigger>
           <TooltipContent>
             <p className="text-xs">
-              {isLoggedIn
+              {loggedIn
                 ? '✅ Guardado en la nube + local'
                 : '💾 Guardado solo en local'}
             </p>

@@ -5,6 +5,57 @@ import path from 'path'
 
 export default defineConfig({
   base: '/el-bucle/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/@firebase/firestore') ||
+            id.includes('node_modules/@firebase/webchannel-wrapper') ||
+            id.includes('node_modules/firebase/firestore')
+          ) {
+            return 'firebase-firestore'
+          }
+
+          if (
+            id.includes('node_modules/firebase/node_modules/@firebase/auth') ||
+            id.includes('node_modules/firebase/auth')
+          ) {
+            return 'firebase-auth'
+          }
+
+          if (
+            id.includes('node_modules/@firebase/analytics') ||
+            id.includes('node_modules/@firebase/installations')
+          ) {
+            return 'firebase-analytics'
+          }
+
+          if (
+            id.includes('node_modules/firebase/app') ||
+            id.includes('node_modules/@firebase/app') ||
+            id.includes('node_modules/@firebase/component') ||
+            id.includes('node_modules/@firebase/logger') ||
+            id.includes('node_modules/@firebase/util')
+          ) {
+            return 'firebase-core'
+          }
+
+          if (id.includes('node_modules/@radix-ui') || id.includes('node_modules/lucide-react')) {
+            return 'ui-vendor'
+          }
+
+          if (
+            id.includes('node_modules/react') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/scheduler')
+          ) {
+            return 'react-vendor'
+          }
+        }
+      }
+    }
+  },
   plugins: [
     react(),
     VitePWA({
