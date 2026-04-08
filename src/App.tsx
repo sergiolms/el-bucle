@@ -128,6 +128,11 @@ function AppContent({ cloudUiReady }: { cloudUiReady: boolean }) {
             >
               ¿Te gusta la app? Invítame a un café ☕
             </a>
+            <div className="mt-3 flex justify-end">
+              <p className="font-mono text-[10px] sm:text-xs text-retro-cyan/40">
+                v{__APP_VERSION__}
+              </p>
+            </div>
           </footer>
         </div>
       </div>

@@ -14,6 +14,14 @@ import {
 } from "lucide-react"
 import { useCharacter } from "./character-context"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { SavePointDialog } from "./save-point-dialog"
 import {
   deleteHistorySnapshots,
@@ -72,6 +80,7 @@ export function HistorySection() {
   const [selectedSnapshotId, setSelectedSnapshotId] = useState("")
   const [selectedSnapshotIds, setSelectedSnapshotIds] = useState<string[]>([])
   const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [pendingDeleteSnapshotIds, setPendingDeleteSnapshotIds] = useState<string[]>([])
 
   useEffect(() => {
     let active = true
@@ -138,16 +147,15 @@ export function HistorySection() {
       ? selectedSnapshotIds
       : (selectedSnapshot ? [selectedSnapshot.id] : [])
 
-    await handleDeleteSnapshots(snapshotIdsToDelete)
+    setPendingDeleteSnapshotIds(snapshotIdsToDelete)
   }
 
-  const handleDeletePreviewed = async () => {
-    if (!selectedSnapshot) {
-      return
-    }
-
-    await handleDeleteSnapshots([selectedSnapshot.id])
+  const handleDeletePreviewed = () => {
+    if (!selectedSnapshot) return
+    setPendingDeleteSnapshotIds([selectedSnapshot.id])
   }
+
+  const pendingDeleteCount = pendingDeleteSnapshotIds.length
 
   const handleCreateSavePoint = async (details: { section: string; zone: string; location: string }) => {
     return createSavePoint(details)
@@ -169,6 +177,46 @@ export function HistorySection() {
         onOpenChange={setShowSaveDialog}
         onSave={handleCreateSavePoint}
       />
+      <Dialog open={pendingDeleteCount > 0} onOpenChange={(open) => {
+        if (!open) {
+          setPendingDeleteSnapshotIds([])
+        }
+      }}>
+        <DialogContent className="max-w-md bg-black border-2 border-red-500/40 text-white">
+          <DialogHeader>
+            <DialogTitle className="font-display text-red-300 uppercase tracking-wider">
+              Confirmar borrado
+            </DialogTitle>
+            <DialogDescription className="font-mono text-xs sm:text-sm text-red-200/70">
+              {pendingDeleteCount > 1
+                ? `Vas a eliminar ${pendingDeleteCount} saves seleccionados. Esta acción no se puede deshacer.`
+                : "Vas a eliminar este save. Esta acción no se puede deshacer."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingDeleteSnapshotIds([])}
+              className="border-2 border-retro-purple text-retro-purple hover:bg-retro-purple/20 font-display text-xs"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={async () => {
+                await handleDeleteSnapshots(pendingDeleteSnapshotIds)
+                setPendingDeleteSnapshotIds([])
+              }}
+              className="bg-red-500/80 hover:bg-red-500 text-white font-display text-xs uppercase border-2 border-red-300/40"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar {pendingDeleteCount > 1 ? pendingDeleteCount : ""}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="retro-card border-retro-green">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
@@ -267,7 +315,7 @@ export function HistorySection() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => void handleDeleteSnapshots([snapshot.id])}
+                          onClick={() => setPendingDeleteSnapshotIds([snapshot.id])}
                           className={`h-8 w-8 p-0 border-red-500/40 text-red-300 hover:bg-red-500/10 ${
                             isPreviewed || isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100"
                           }`}

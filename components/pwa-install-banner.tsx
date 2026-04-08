@@ -37,10 +37,20 @@ function getInstallHint() {
 
   const userAgent = navigator.userAgent.toLowerCase()
   const isIos = /iphone|ipad|ipod/.test(userAgent)
+  const isIosChrome = /crios/.test(userAgent)
+  const isIosSafari = isIos && /safari/.test(userAgent) && !/crios|fxios/.test(userAgent)
   const isAndroid = /android/.test(userAgent)
 
+  if (isIosChrome) {
+    return "En iPhone con Chrome, abre el menú y pulsa Añadir a pantalla de inicio."
+  }
+
+  if (isIosSafari) {
+    return "En iPhone con Safari, pulsa Compartir y luego Añadir a pantalla de inicio."
+  }
+
   if (isIos) {
-    return "En Safari, pulsa Compartir y luego Añadir a pantalla de inicio."
+    return "En iPhone, usa el menú del navegador o Compartir para Añadir a pantalla de inicio."
   }
 
   if (isAndroid) {
@@ -69,6 +79,7 @@ function getInstallInstructions() {
       "Pulsa el menú de Chrome.",
       "Elige Añadir a pantalla de inicio.",
       "Confirma para guardarla como app en tu iPhone.",
+      "Si no aparece esa opción, prueba también desde Compartir.",
     ]
   }
 
@@ -77,6 +88,14 @@ function getInstallInstructions() {
       "Pulsa Compartir en Safari.",
       "Elige Añadir a pantalla de inicio.",
       "Confirma para guardarla como app en tu iPhone.",
+    ]
+  }
+
+  if (/iphone|ipad|ipod/.test(userAgent)) {
+    return [
+      "Abre el menú principal del navegador o el botón Compartir.",
+      "Busca Añadir a pantalla de inicio.",
+      "Confirma para guardar El Bucle como app en tu iPhone o iPad.",
     ]
   }
 
@@ -189,7 +208,7 @@ export function PwaInstallBanner() {
               Cómo instalar la app
             </DialogTitle>
             <DialogDescription className="font-mono text-xs sm:text-sm text-retro-pink/70">
-              Sigue estos pasos en tu navegador. Si no ves la opción exacta, revisa también el menú principal y la barra superior.
+              Sigue estos pasos en tu navegador. En iPhone, la opción puede aparecer en el menú o en Compartir según el navegador.
             </DialogDescription>
           </DialogHeader>
 
