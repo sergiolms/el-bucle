@@ -39,7 +39,7 @@ export function InventorySection() {
       <WeaponsList
         weapons={character.weapons}
         maxWeapons={3}
-        onAdd={(weapon) => addWeapon({ ...weapon, locked: false })}
+        onAdd={addWeapon}
         onRemove={removeWeapon}
         onToggleLock={toggleWeaponLock}
       />
