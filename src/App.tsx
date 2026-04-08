@@ -1,6 +1,8 @@
 import { Suspense, lazy } from "react"
 import { CharacterProvider } from "@/components/character-context"
 import { CharacterSheet } from "@/components/character-sheet"
+import { LegacyMigrationBanner } from "@/components/legacy-migration-banner"
+import { PwaUpdateBanner } from "@/components/pwa-update-banner"
 import { useDeferredValueReady } from "@/src/lib/useDeferredValueReady"
 
 const AuthButton = lazy(async () => ({
@@ -44,6 +46,9 @@ function AppContent({ cloudUiReady }: { cloudUiReady: boolean }) {
         <div className="absolute top-1/2 left-1/2 hidden sm:block -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-retro-purple/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
 
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl relative z-10" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}>
+          <PwaUpdateBanner />
+          <LegacyMigrationBanner />
+
           {/* Top controls bar */}
           <div className="flex justify-end items-center mb-4 sm:mb-6">
             {cloudUiReady ? (

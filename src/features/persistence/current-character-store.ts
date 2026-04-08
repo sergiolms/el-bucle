@@ -6,6 +6,8 @@ import {
   wrapRequest,
 } from "./database"
 const CURRENT_CHARACTER_KEY = "active-character"
+export const LEGACY_STORAGE_MIGRATED_EVENT = "el-bucle:legacy-storage-migrated"
+export const LEGACY_MIGRATION_NOTICE_KEY = "el-bucle-legacy-migration-notice"
 
 const LEGACY_CHARACTER_KEY = "el-bucle-character"
 const LEGACY_TIMESTAMP_KEY = "el-bucle-character-timestamp"
@@ -47,6 +49,15 @@ function clearLegacyCharacter(): void {
   }
 }
 
+function notifyLegacyMigration() {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  sessionStorage.setItem(LEGACY_MIGRATION_NOTICE_KEY, "1")
+  window.dispatchEvent(new CustomEvent(LEGACY_STORAGE_MIGRATED_EVENT))
+}
+
 export async function migrateLegacyCharacterStorage(): Promise<void> {
   if (typeof window === "undefined") {
     return
@@ -67,6 +78,7 @@ export async function migrateLegacyCharacterStorage(): Promise<void> {
 
       await saveCurrentCharacterRecord(legacyRecord)
       clearLegacyCharacter()
+      notifyLegacyMigration()
     })()
   }
 

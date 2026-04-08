@@ -1,5 +1,7 @@
 export {
   getCurrentCharacterRecord,
+  LEGACY_MIGRATION_NOTICE_KEY,
+  LEGACY_STORAGE_MIGRATED_EVENT,
   loadCurrentCharacter,
   migrateLegacyCharacterStorage,
   saveCurrentCharacter,
