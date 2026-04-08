@@ -4,6 +4,8 @@ import { useCharacter } from "./character-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Trash2, Clock, FileText } from "lucide-react"
+import { IconActionButton } from "@/components/shared/icon-action-button"
+import { ListRow } from "@/components/shared/list-row"
 
 export function CluesSection() {
   const { character, addClue, removeClue, clearTemporalClues } = useCharacter()
@@ -81,20 +83,19 @@ export function CluesSection() {
         </div>
         <div className="space-y-2 max-h-40 overflow-y-auto">
           {normalClues.map((clue) => (
-            <div
+            <ListRow
               key={clue.id}
-              className="flex items-start justify-between bg-black/10 backdrop-blur-md p-3 rounded border border-green-400/20"
+              tone="green"
+              verticalAlign="start"
             >
               <span className="text-green-100 font-mono text-sm flex-1 mr-2">{clue.text}</span>
-              <Button
-                variant="ghost"
-                size="sm"
+              <IconActionButton
                 onClick={() => removeClue(clue.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0 flex-shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
+                className="flex-shrink-0"
+                tone="danger"
+                icon={<Trash2 className="w-4 h-4" />}
+              />
+            </ListRow>
           ))}
         </div>
       </div>
@@ -119,20 +120,19 @@ export function CluesSection() {
         </div>
         <div className="space-y-2 max-h-40 overflow-y-auto">
           {temporalClues.map((clue) => (
-            <div
+            <ListRow
               key={clue.id}
-              className="flex items-start justify-between bg-black/10 backdrop-blur-md p-3 rounded border border-orange-400/20"
+              tone="orange"
+              verticalAlign="start"
             >
               <span className="text-orange-100 font-mono text-sm flex-1 mr-2">{clue.text}</span>
-              <Button
-                variant="ghost"
-                size="sm"
+              <IconActionButton
                 onClick={() => removeClue(clue.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0 flex-shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
+                className="flex-shrink-0"
+                tone="danger"
+                icon={<Trash2 className="w-4 h-4" />}
+              />
+            </ListRow>
           ))}
         </div>
       </div>

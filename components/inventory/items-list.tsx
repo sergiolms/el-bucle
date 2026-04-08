@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Trash2, Lock, Unlock, Package } from "lucide-react"
 import type { InventoryItem } from "../character-context"
+import { IconActionButton } from "@/components/shared/icon-action-button"
+import { ListRow } from "@/components/shared/list-row"
 
 interface ItemsListProps {
   items: InventoryItem[]
@@ -40,13 +42,11 @@ export function ItemsList({ items, onAdd, onRemove, onToggleLock }: ItemsListPro
 
       <div className="space-y-2 max-h-48 overflow-y-auto">
         {items.map((item) => (
-          <div
+          <ListRow
             key={item.id}
-            className={`flex items-center justify-between p-2 rounded border transition-all ${
-              item.locked
-                ? 'bg-yellow-500/10 border-yellow-400/50 shadow-[0_0_8px_rgba(250,204,21,0.2)]'
-                : 'bg-black/20 border-cyan-400/20'
-            }`}
+            tone="cyan"
+            highlighted={item.locked}
+            paddingClassName="p-2"
           >
             <div className="flex items-center gap-2 flex-1">
               <div className="relative">
@@ -63,31 +63,21 @@ export function ItemsList({ items, onAdd, onRemove, onToggleLock }: ItemsListPro
               )}
             </div>
             <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
+              <IconActionButton
                 onClick={() => onToggleLock(item.id)}
-                className={`h-11 w-11 p-0 transition-all ${
-                  item.locked
-                    ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/20'
-                    : 'text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/20'
-                }`}
+                tone={item.locked ? "warning" : "neutral"}
                 title={item.locked ? 'Desbloquear' : 'Bloquear'}
-              >
-                {item.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
+                icon={item.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+              />
+              <IconActionButton
                 onClick={() => onRemove(item.id)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/20 h-11 w-11 p-0"
                 disabled={item.locked}
                 title={item.locked ? 'No se puede borrar (bloqueado)' : 'Eliminar'}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+                tone="danger"
+                icon={<Trash2 className="w-4 h-4" />}
+              />
             </div>
-          </div>
+          </ListRow>
         ))}
         {items.length === 0 && (
           <div className="text-center text-cyan-400/50 font-mono py-4">No hay objetos</div>
