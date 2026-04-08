@@ -56,6 +56,9 @@ export function NumericInput({
       type="number"
       min={min}
       max={max}
+      inputMode="numeric"
+      pattern="[0-9]*"
+      enterKeyHint="done"
       value={internalValue}
       onChange={handleChange}
       onBlur={handleBlur}

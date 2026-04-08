@@ -122,6 +122,9 @@ export function SavePointDialog({
               value={section}
               onChange={(event) => setSection(event.target.value)}
               placeholder="Ej: 42, 103, 211..."
+              inputMode="numeric"
+              pattern="[0-9]*"
+              enterKeyHint="done"
               className="retro-input text-retro-cyan border-retro-green/40 text-center font-bold text-lg"
             />
           </div>

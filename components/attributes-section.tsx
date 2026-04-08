@@ -78,6 +78,9 @@ export function AttributesSection() {
           value={character.currentSection}
           onChange={(e) => updateCharacter({ currentSection: e.target.value })}
           placeholder="Ej: 1, 42, 103..."
+          inputMode="numeric"
+          pattern="[0-9]*"
+          enterKeyHint="done"
           className="retro-input text-retro-cyan border-retro-cyan text-center font-bold text-lg"
         />
       </div>
