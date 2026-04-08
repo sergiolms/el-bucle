@@ -1,11 +1,16 @@
+import { Suspense, lazy } from "react"
 import { CharacterProvider } from "@/components/character-context"
 import { CharacterSheet } from "@/components/character-sheet"
-import { AuthButton } from "@/components/auth-button"
-import { useAuth } from "@/src/lib/useAuth"
+
+const AuthButton = lazy(async () => ({
+  default: (await import("@/components/auth-button")).AuthButton,
+}))
+
+const CloudSyncManager = lazy(async () => ({
+  default: (await import("@/components/cloud-sync-manager")).CloudSyncManager,
+}))
 
 function AppContent() {
-  const { user } = useAuth()
-
   return (
     <div className="min-h-screen relative transition-colors duration-300 bg-gradient-to-b from-black via-retro-darkBlueLighter to-black overflow-hidden">
         {/* Animated retro grid */}
@@ -40,7 +45,9 @@ function AppContent() {
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl relative z-10" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}>
           {/* Top controls bar */}
           <div className="flex justify-end items-center mb-4 sm:mb-6">
-            <AuthButton isLoggedIn={!!user} />
+            <Suspense fallback={null}>
+              <AuthButton />
+            </Suspense>
           </div>
 
           <header className="text-center mb-6 sm:mb-8">
@@ -120,6 +127,9 @@ function AppContent() {
 export default function App() {
   return (
     <CharacterProvider>
+      <Suspense fallback={null}>
+        <CloudSyncManager />
+      </Suspense>
       <AppContent />
     </CharacterProvider>
   )

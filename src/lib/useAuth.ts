@@ -1,41 +1,68 @@
 import { useEffect, useState } from 'react'
-import {
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  User,
-  GoogleAuthProvider
-} from 'firebase/auth'
-import { auth, isFirebaseConfigured } from './firebase'
-
-const googleProvider = new GoogleAuthProvider()
+import type { User } from 'firebase/auth'
+import { getAuthService, isFirebaseConfigured } from './firebase'
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !auth) {
+    if (!isFirebaseConfigured) {
       setLoading(false)
       return
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser)
-      setLoading(false)
-    })
+    let cancelled = false
+    let unsubscribe = () => {}
 
-    return () => unsubscribe()
+    void (async () => {
+      try {
+        const [authModule, auth] = await Promise.all([
+          import('firebase/auth'),
+          getAuthService(),
+        ])
+
+        if (!auth || cancelled) {
+          if (!cancelled) setLoading(false)
+          return
+        }
+
+        unsubscribe = authModule.onAuthStateChanged(auth, (currentUser) => {
+          if (cancelled) return
+          setUser(currentUser)
+          setLoading(false)
+        })
+      } catch (error) {
+        console.error('❌ Error loading auth state:', error)
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   }, [])
 
   const signInWithGoogle = async () => {
-    if (!isFirebaseConfigured || !auth) {
+    if (!isFirebaseConfigured) {
       console.warn('⚠️ Firebase no está configurado')
       throw new Error('Firebase not configured')
     }
 
     try {
-      const result = await signInWithPopup(auth, googleProvider)
+      const [authModule, auth] = await Promise.all([
+        import('firebase/auth'),
+        getAuthService(),
+      ])
+
+      if (!auth) {
+        throw new Error('Firebase auth unavailable')
+      }
+
+      const result = await authModule.signInWithPopup(auth, new authModule.GoogleAuthProvider())
       console.log('✅ Login exitoso:', result.user.displayName || result.user.email)
       return result.user
     } catch (error: any) {
@@ -45,13 +72,22 @@ export function useAuth() {
   }
 
   const signOut = async () => {
-    if (!isFirebaseConfigured || !auth) {
+    if (!isFirebaseConfigured) {
       console.warn('⚠️ Firebase no está configurado')
       return
     }
 
     try {
-      await firebaseSignOut(auth)
+      const [authModule, auth] = await Promise.all([
+        import('firebase/auth'),
+        getAuthService(),
+      ])
+
+      if (!auth) {
+        return
+      }
+
+      await authModule.signOut(auth)
       console.log('✅ Logout exitoso')
     } catch (error: any) {
       console.error('❌ Error en logout:', error.message)

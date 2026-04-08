@@ -1,7 +1,7 @@
-import { initializeApp, type FirebaseApp } from "firebase/app"
-import { getAnalytics, type Analytics } from "firebase/analytics"
-import { getFirestore, type Firestore } from "firebase/firestore"
-import { getAuth, type Auth } from "firebase/auth"
+import type { Analytics } from "firebase/analytics"
+import type { FirebaseApp } from "firebase/app"
+import type { Auth } from "firebase/auth"
+import type { Firestore } from "firebase/firestore"
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,28 +19,114 @@ const isFirebaseConfigured = !!(
   firebaseConfig.projectId
 )
 
-let app: FirebaseApp | null = null
-let analytics: Analytics | null = null
-let db: Firestore | null = null
-let auth: Auth | null = null
+interface FirebaseServices {
+  app: FirebaseApp
+  analytics: Analytics | null
+  auth: Auth
+  db: Firestore
+}
 
-if (isFirebaseConfigured) {
-  try {
-    // Initialize Firebase
-    app = initializeApp(firebaseConfig)
+let appPromise: Promise<FirebaseApp | null> | null = null
+let authPromise: Promise<Auth | null> | null = null
+let firestorePromise: Promise<Firestore | null> | null = null
+let analyticsPromise: Promise<Analytics | null> | null = null
+let firebaseServicesPromise: Promise<FirebaseServices | null> | null = null
 
-    // Initialize services
-    analytics = typeof window !== 'undefined' ? getAnalytics(app) : null
-    db = getFirestore(app)
-    auth = getAuth(app)
-
-    console.log('✅ Firebase initialized successfully')
-  } catch (error) {
-    console.error('❌ Error initializing Firebase:', error)
+async function getFirebaseApp(): Promise<FirebaseApp | null> {
+  if (!isFirebaseConfigured) {
+    return null
   }
-} else {
+
+  if (!appPromise) {
+    appPromise = (async () => {
+      try {
+        const { initializeApp } = await import("firebase/app")
+        const app = initializeApp(firebaseConfig)
+        console.log("✅ Firebase initialized successfully")
+        return app
+      } catch (error) {
+        console.error("❌ Error initializing Firebase:", error)
+        return null
+      }
+    })()
+  }
+
+  return appPromise
+}
+
+export async function getAuthService(): Promise<Auth | null> {
+  if (!authPromise) {
+    authPromise = (async () => {
+      const [app, authModule] = await Promise.all([
+        getFirebaseApp(),
+        import("firebase/auth"),
+      ])
+
+      return app ? authModule.getAuth(app) : null
+    })()
+  }
+
+  return authPromise
+}
+
+export async function getFirestoreService(): Promise<Firestore | null> {
+  if (!firestorePromise) {
+    firestorePromise = (async () => {
+      const [app, firestoreModule] = await Promise.all([
+        getFirebaseApp(),
+        import("firebase/firestore"),
+      ])
+
+      return app ? firestoreModule.getFirestore(app) : null
+    })()
+  }
+
+  return firestorePromise
+}
+
+export async function getAnalyticsService(): Promise<Analytics | null> {
+  if (!analyticsPromise) {
+    analyticsPromise = (async () => {
+      const [app, analyticsModule] = await Promise.all([
+        getFirebaseApp(),
+        import("firebase/analytics"),
+      ])
+
+      if (!app || typeof window === "undefined" || !firebaseConfig.measurementId) {
+        return null
+      }
+
+      return analyticsModule.getAnalytics(app)
+    })()
+  }
+
+  return analyticsPromise
+}
+
+export async function getFirebaseServices(): Promise<FirebaseServices | null> {
+  if (!firebaseServicesPromise) {
+    firebaseServicesPromise = (async () => {
+      const [app, auth, db, analytics] = await Promise.all([
+        getFirebaseApp(),
+        getAuthService(),
+        getFirestoreService(),
+        getAnalyticsService(),
+      ])
+
+      if (!app || !auth || !db) {
+        return null
+      }
+
+      return { app, analytics, auth, db }
+    })()
+  }
+
+  return firebaseServicesPromise
+}
+
+if (!isFirebaseConfigured) {
   console.warn('⚠️ Firebase not configured - Auth features will be disabled')
 }
 
-export { analytics, db, auth, isFirebaseConfigured }
-export default app
+export { isFirebaseConfigured }
+export default getFirebaseServices

@@ -1,14 +1,34 @@
 
-import { useState, useEffect } from "react"
+import { Suspense, lazy, useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AttributesSection } from "./attributes-section"
-import { InventorySection } from "./inventory-section"
-import { CluesSection } from "./clues-section"
 import { TimeSection } from "./time-section"
-import { NotesSection } from "./notes-section"
-import { CombatSection } from "./combat-section"
 import { User, Package, FileText, Swords } from "lucide-react"
 import { getTabClasses } from "@/lib/tab-styles"
+
+const InventorySection = lazy(async () => ({
+  default: (await import("./inventory-section")).InventorySection,
+}))
+
+const CluesSection = lazy(async () => ({
+  default: (await import("./clues-section")).CluesSection,
+}))
+
+const NotesSection = lazy(async () => ({
+  default: (await import("./notes-section")).NotesSection,
+}))
+
+const CombatSection = lazy(async () => ({
+  default: (await import("./combat-section")).CombatSection,
+}))
+
+function TabPanelFallback() {
+  return (
+    <div className="retro-card text-center font-mono text-retro-cyan/70 uppercase tracking-wider">
+      Cargando seccion...
+    </div>
+  )
+}
 
 export function CharacterSheet() {
   const [activeTab, setActiveTab] = useState("character")
@@ -55,22 +75,28 @@ export function CharacterSheet() {
         </TabsContent>
 
         <TabsContent value="equipment" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <InventorySection />
+          <Suspense fallback={<TabPanelFallback />}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <InventorySection />
+              </div>
+              <div className="space-y-6">
+                <CluesSection />
+              </div>
             </div>
-            <div className="space-y-6">
-              <CluesSection />
-            </div>
-          </div>
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="combat" className="space-y-6">
-          <CombatSection />
+          <Suspense fallback={<TabPanelFallback />}>
+            <CombatSection />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="notes" className="space-y-6">
-          <NotesSection />
+          <Suspense fallback={<TabPanelFallback />}>
+            <NotesSection />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

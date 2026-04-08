@@ -1,10 +1,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useCallback, useEffect } from "react"
-import { useAuth } from "@/src/lib/useAuth"
-import { useFirestoreSync } from "@/src/lib/useFirestoreSync"
-import { FirebaseCharacterService, SyncResult } from "@/src/lib/firebaseService"
-import { DataConflictModal } from "./data-conflict-modal"
+import { loadCharacterFromLocalStorage } from "@/src/lib/localCharacterStorage"
 
 export interface Weapon {
   id: string
@@ -102,6 +99,7 @@ const defaultCharacter: CharacterData = {
 interface CharacterContextType {
   character: CharacterData
   updateCharacter: (updates: Partial<CharacterData>) => void
+  replaceCharacter: (nextCharacter: CharacterData) => void
   addItem: (item: string) => void
   removeItem: (id: string) => void
   toggleItemLock: (id: string) => void
@@ -130,81 +128,34 @@ const CharacterContext = createContext<CharacterContextType | undefined>(undefin
 export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const [character, setCharacter] = useState<CharacterData>(defaultCharacter)
   const [initialized, setInitialized] = useState(false)
-  const [conflictData, setConflictData] = useState<SyncResult | null>(null)
-  const { user } = useAuth()
 
   // Load initial data only once
   useEffect(() => {
     if (initialized) return
 
-    const localData = FirebaseCharacterService.loadFromLocalStorage()
+    const localData = loadCharacterFromLocalStorage()
     if (localData) {
       setCharacter(localData.character)
     }
     setInitialized(true)
   }, [initialized])
 
-  // Callback for Firestore updates (memoized and stable)
-  const handleFirestoreUpdate = useCallback((data: CharacterData) => {
-    setCharacter(prevCharacter => {
-      // Only update if data is actually different
-      const prevData = JSON.stringify(prevCharacter)
-      const newData = JSON.stringify(data)
-
-      if (prevData === newData) {
-        return prevCharacter // Don't change if equal
-      }
-
-      return data
-    })
-  }, [])
-
-  // Callback for handling conflicts
-  const handleConflict = useCallback((syncResult: SyncResult) => {
-    setConflictData(syncResult)
-  }, [])
-
-  // Handlers for conflict resolution
-  const handleSelectLocal = useCallback(async () => {
-    if (!conflictData || !user) return
-
-    if (conflictData.localData) {
-      // Data mismatch: use local data
-      setCharacter(conflictData.localData)
-      await FirebaseCharacterService.saveCharacter(user.uid, conflictData.localData)
-      FirebaseCharacterService.saveToLocalStorage(conflictData.localData, Date.now())
-    } else {
-      // Cloud recovery declined: keep current state, sync it to cloud
-      await FirebaseCharacterService.saveCharacter(user.uid, character)
-      FirebaseCharacterService.saveToLocalStorage(character, Date.now())
-    }
-
-    setConflictData(null)
-  }, [conflictData, user, character])
-
-  const handleSelectCloud = useCallback(async () => {
-    if (!conflictData || !conflictData.cloudData) return
-
-    // Use cloud data
-    setCharacter(conflictData.cloudData)
-
-    // Save to localStorage
-    FirebaseCharacterService.saveToLocalStorage(conflictData.cloudData, Date.now())
-
-    setConflictData(null)
-  }, [conflictData])
-
-  // Firestore sync (only if there is a user)
-  useFirestoreSync({
-    userId: user?.uid || null,
-    character,
-    onUpdate: handleFirestoreUpdate,
-    onConflict: handleConflict
-  })
-
   // Memoize updateCharacter to avoid re-renders
   const updateCharacter = useCallback((updates: Partial<CharacterData>) => {
     setCharacter((prev) => ({ ...prev, ...updates }))
+  }, [])
+
+  const replaceCharacter = useCallback((nextCharacter: CharacterData) => {
+    setCharacter((prevCharacter) => {
+      const prevData = JSON.stringify(prevCharacter)
+      const newData = JSON.stringify(nextCharacter)
+
+      if (prevData === newData) {
+        return prevCharacter
+      }
+
+      return nextCharacter
+    })
   }, [])
 
   const addItem = useCallback((itemName: string) => {
@@ -410,6 +361,7 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
       value={{
         character,
         updateCharacter,
+        replaceCharacter,
         addItem,
         removeItem,
         toggleItemLock,
@@ -434,19 +386,6 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-
-      {/* Data conflict modal */}
-      <DataConflictModal
-        isOpen={!!conflictData}
-        conflictType={conflictData?.conflictType}
-        localData={conflictData?.localData || null}
-        cloudData={conflictData?.cloudData || character}
-        localTimestamp={conflictData?.localTimestamp}
-        cloudTimestamp={conflictData?.cloudTimestamp}
-        changedFields={conflictData?.changedFields}
-        onSelectLocal={handleSelectLocal}
-        onSelectCloud={handleSelectCloud}
-      />
     </CharacterContext.Provider>
   )
 }
