@@ -1,7 +1,7 @@
 
 import { Suspense, lazy, useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { User, Package, FileText, Swords } from "lucide-react"
+import { User, Package, FileText, History, Swords } from "lucide-react"
 import { getTabClasses } from "@/lib/tab-styles"
 
 const CharacterTab = lazy(async () => ({
@@ -20,6 +20,10 @@ const CombatTab = lazy(async () => ({
   default: (await import("@/src/features/character/tabs/combat-tab")).CombatTab,
 }))
 
+const HistoryTab = lazy(async () => ({
+  default: (await import("@/src/features/character/tabs/history-tab")).HistoryTab,
+}))
+
 function TabPanelFallback() {
   return (
     <div className="retro-card text-center font-mono text-retro-cyan/70 uppercase tracking-wider">
@@ -35,7 +39,7 @@ export function CharacterSheet() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const tabParam = urlParams.get("tab")
-    if (tabParam && ["character", "equipment", "notes", "combat"].includes(tabParam)) {
+    if (tabParam && ["character", "equipment", "history", "notes", "combat"].includes(tabParam)) {
       setActiveTab(tabParam)
     }
   }, [])
@@ -57,6 +61,10 @@ export function CharacterSheet() {
             <TabsTrigger value="combat" className={getTabClasses('orange', 'middle')}>
               <Swords className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span>COMBATE</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className={getTabClasses('green', 'middle')}>
+              <History className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>HISTORIAL</span>
             </TabsTrigger>
             <TabsTrigger value="notes" className={getTabClasses('yellow', 'last')}>
               <FileText className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -84,6 +92,12 @@ export function CharacterSheet() {
         <TabsContent value="notes" className="space-y-6">
           <Suspense fallback={<TabPanelFallback />}>
             <NotesTab />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-6">
+          <Suspense fallback={<TabPanelFallback />}>
+            <HistoryTab />
           </Suspense>
         </TabsContent>
       </Tabs>

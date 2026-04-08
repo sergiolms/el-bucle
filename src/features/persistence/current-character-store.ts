@@ -1,8 +1,10 @@
 import type { CharacterData } from "@/src/features/character/model"
-
-const DB_NAME = "el-bucle"
-const DB_VERSION = 1
-const CURRENT_CHARACTER_STORE = "current_character"
+import {
+  CURRENT_CHARACTER_STORE,
+  getObjectStore,
+  waitForTransaction,
+  wrapRequest,
+} from "./database"
 const CURRENT_CHARACTER_KEY = "active-character"
 
 const LEGACY_CHARACTER_KEY = "el-bucle-character"
@@ -14,53 +16,7 @@ export interface CharacterRecord {
   updatedAt: number
 }
 
-let databasePromise: Promise<IDBDatabase> | null = null
 let migrationPromise: Promise<void> | null = null
-
-function openDatabase(): Promise<IDBDatabase> {
-  if (!databasePromise) {
-    databasePromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION)
-
-      request.onupgradeneeded = () => {
-        const database = request.result
-
-        if (!database.objectStoreNames.contains(CURRENT_CHARACTER_STORE)) {
-          database.createObjectStore(CURRENT_CHARACTER_STORE, { keyPath: "id" })
-        }
-      }
-
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error ?? new Error("Failed to open IndexedDB"))
-    })
-  }
-
-  return databasePromise
-}
-
-function wrapRequest<T>(request: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error ?? new Error("IndexedDB request failed"))
-  })
-}
-
-function waitForTransaction(transaction: IDBTransaction): Promise<void> {
-  return new Promise((resolve, reject) => {
-    transaction.oncomplete = () => resolve()
-    transaction.onerror = () => reject(transaction.error ?? new Error("IndexedDB transaction failed"))
-    transaction.onabort = () => reject(transaction.error ?? new Error("IndexedDB transaction aborted"))
-  })
-}
-
-async function getStore(mode: IDBTransactionMode) {
-  const database = await openDatabase()
-  const transaction = database.transaction(CURRENT_CHARACTER_STORE, mode)
-  return {
-    store: transaction.objectStore(CURRENT_CHARACTER_STORE),
-    transaction,
-  }
-}
 
 function readLegacyCharacter(): CharacterRecord | null {
   try {
@@ -122,7 +78,7 @@ export async function getCurrentCharacterRecord(runMigration = true): Promise<Ch
     await migrateLegacyCharacterStorage()
   }
 
-  const { store } = await getStore("readonly")
+  const { store } = await getObjectStore(CURRENT_CHARACTER_STORE, "readonly")
   const record = await wrapRequest(store.get(CURRENT_CHARACTER_KEY))
   return (record as CharacterRecord | undefined) ?? null
 }
@@ -144,7 +100,7 @@ export async function saveCurrentCharacter(character: CharacterData, updatedAt =
 }
 
 export async function saveCurrentCharacterRecord(record: CharacterRecord): Promise<void> {
-  const { store, transaction } = await getStore("readwrite")
+  const { store, transaction } = await getObjectStore(CURRENT_CHARACTER_STORE, "readwrite")
   store.put(record)
   await waitForTransaction(transaction)
 }
