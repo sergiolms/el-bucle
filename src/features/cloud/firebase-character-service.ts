@@ -1,10 +1,10 @@
 import type { Unsubscribe } from "firebase/firestore"
-import type { CharacterData } from "@/components/character-context"
+import type { CharacterData } from "@/src/features/character/model"
 import { getFirestoreService, isFirebaseConfigured } from "./firebase"
 import {
   loadCharacterFromLocalStorage,
   saveCharacterToLocalStorage,
-} from "./localCharacterStorage"
+} from "./local-character-storage"
 
 const CHARACTERS_COLLECTION = "characters"
 

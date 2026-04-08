@@ -1,6 +1,6 @@
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react"
-import { loadCharacterFromLocalStorage } from "@/src/lib/localCharacterStorage"
+import { loadCharacterFromLocalStorage } from "@/src/features/cloud"
 import { characterReducer } from "./reducer"
 import { defaultCharacter, type CharacterData, type Enemy, type Note, type Weapon } from "./model"
 import { getEnemyName } from "./selectors"

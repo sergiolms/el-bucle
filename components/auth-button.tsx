@@ -1,5 +1,5 @@
 import { LogIn, LogOut, Cloud, HardDrive } from "lucide-react"
-import { useAuth } from "@/src/lib/useAuth"
+import { useAuth } from "@/src/features/cloud"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,

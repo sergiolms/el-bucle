@@ -1,4 +1,4 @@
-import type { CharacterData } from "@/components/character-context"
+import type { CharacterData } from "@/src/features/character/model"
 
 const LOCALSTORAGE_KEY = "el-bucle-character"
 const LOCALSTORAGE_TIMESTAMP_KEY = "el-bucle-character-timestamp"

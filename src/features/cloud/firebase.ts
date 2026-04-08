@@ -10,7 +10,7 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 const isFirebaseConfigured = !!(
@@ -125,7 +125,7 @@ export async function getFirebaseServices(): Promise<FirebaseServices | null> {
 }
 
 if (!isFirebaseConfigured) {
-  console.warn('⚠️ Firebase not configured - Auth features will be disabled')
+  console.warn("⚠️ Firebase not configured - Auth features will be disabled")
 }
 
 export { isFirebaseConfigured }

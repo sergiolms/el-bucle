@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useRef, useState } from 'react'
-import type { CharacterData } from '@/components/character-context'
-import type { SyncResult } from './firebaseService'
-import { isFirebaseConfigured } from './firebase'
-import { saveCharacterToLocalStorage } from './localCharacterStorage'
+import { useCallback, useEffect, useRef, useState } from "react"
+import type { CharacterData } from "@/src/features/character/model"
+import type { SyncResult } from "./firebase-character-service"
+import { isFirebaseConfigured } from "./firebase"
+import { saveCharacterToLocalStorage } from "./local-character-storage"
 
 interface UseFirestoreSyncProps {
   userId: string | null
@@ -13,22 +13,21 @@ interface UseFirestoreSyncProps {
 
 export function useFirestoreSync({ userId, character, onUpdate, onConflict }: UseFirestoreSyncProps) {
   const [synced, setSynced] = useState(false)
-  const lastSavedRef = useRef<string>('')
+  const lastSavedRef = useRef("")
   const pendingChangesRef = useRef(false)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Synchronize on login (only once)
   useEffect(() => {
     if (!isFirebaseConfigured || !userId || synced) return
 
     const initialSync = async () => {
       try {
-        const { FirebaseCharacterService } = await import('./firebaseService')
+        const { FirebaseCharacterService } = await import("./firebase-character-service")
         await FirebaseCharacterService.enableOfflinePersistence()
 
         const syncResult = await FirebaseCharacterService.syncWithLocalStorage(userId)
         if (syncResult) {
-          console.log('✅ Initial synchronization completed')
+          console.log("✅ Initial synchronization completed")
 
           if (syncResult.hasConflict && onConflict) {
             onConflict(syncResult)
@@ -38,16 +37,15 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
           }
         }
       } catch (error) {
-        console.error('❌ Initial synchronization error:', error)
+        console.error("❌ Initial synchronization error:", error)
       }
 
       setSynced(true)
     }
 
-    initialSync()
+    void initialSync()
   }, [userId, synced, onUpdate, onConflict])
 
-  // Listen to real-time changes from Firestore (only if logged in)
   useEffect(() => {
     if (!isFirebaseConfigured || !userId || !synced) return
 
@@ -56,7 +54,7 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
 
     void (async () => {
       try {
-        const { FirebaseCharacterService } = await import('./firebaseService')
+        const { FirebaseCharacterService } = await import("./firebase-character-service")
 
         const nextUnsubscribe = await FirebaseCharacterService.subscribeToCharacter(
           userId,
@@ -69,14 +67,14 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
             const localData = lastSavedRef.current
 
             if (remoteData !== localData) {
-              console.log('🔄 Changes detected from another device')
+              console.log("🔄 Changes detected from another device")
               onUpdate(remoteCharacter)
               saveCharacterToLocalStorage(remoteCharacter)
               lastSavedRef.current = remoteData
             }
           },
           (error) => {
-            console.error('❌ Synchronization error:', error)
+            console.error("❌ Synchronization error:", error)
           }
         )
 
@@ -87,7 +85,7 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
 
         unsubscribe = nextUnsubscribe
       } catch (error) {
-        console.error('❌ Error starting realtime sync:', error)
+        console.error("❌ Error starting realtime sync:", error)
       }
     })()
 
@@ -97,45 +95,39 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
     }
   }, [userId, synced, onUpdate])
 
-  // Auto-save on character changes (debounced)
   useEffect(() => {
     const currentData = JSON.stringify(character)
 
-    // Do not save if it hasn't changed
     if (currentData === lastSavedRef.current) {
       pendingChangesRef.current = false
       return
     }
 
-    // Mark that there are pending changes
     pendingChangesRef.current = true
 
-    // Clear previous timeout if exists
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        // Always save to localStorage
         saveCharacterToLocalStorage(character)
 
-        // If logged in and Firebase configured, also save to Firestore
         if (isFirebaseConfigured && userId && synced) {
-          const { FirebaseCharacterService } = await import('./firebaseService')
+          const { FirebaseCharacterService } = await import("./firebase-character-service")
           await FirebaseCharacterService.saveCharacter(userId, character)
-          console.log('💾 Saved: localStorage + Firestore')
+          console.log("💾 Saved: localStorage + Firestore")
         } else {
-          console.log('💾 Saved: localStorage only')
+          console.log("💾 Saved: localStorage only")
         }
 
         lastSavedRef.current = currentData
-        pendingChangesRef.current = false // Changes saved
+        pendingChangesRef.current = false
       } catch (error) {
-        console.error('❌ Auto-save error:', error)
+        console.error("❌ Auto-save error:", error)
         pendingChangesRef.current = false
       }
-    }, 1000) // Debounce 1 second
+    }, 1000)
 
     return () => {
       if (saveTimeoutRef.current) {
@@ -144,17 +136,16 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
     }
   }, [character, userId, synced])
 
-  // Manual save function
   const saveToFirestore = useCallback(async () => {
     if (!userId) return
 
     try {
-      const { FirebaseCharacterService } = await import('./firebaseService')
+      const { FirebaseCharacterService } = await import("./firebase-character-service")
       await FirebaseCharacterService.saveCharacter(userId, character)
       lastSavedRef.current = JSON.stringify(character)
-      console.log('💾 Manual save successful')
+      console.log("💾 Manual save successful")
     } catch (error) {
-      console.error('❌ Save error:', error)
+      console.error("❌ Save error:", error)
     }
   }, [userId, character])
 

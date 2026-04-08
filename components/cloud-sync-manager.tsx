@@ -1,11 +1,13 @@
 import { useCallback, useState } from "react"
 import { DataConflictModal } from "./data-conflict-modal"
-import type { CharacterData } from "./character-context"
 import { useCharacter } from "./character-context"
-import { useAuth } from "@/src/lib/useAuth"
-import { useFirestoreSync } from "@/src/lib/useFirestoreSync"
-import type { SyncResult } from "@/src/lib/firebaseService"
-import { saveCharacterToLocalStorage } from "@/src/lib/localCharacterStorage"
+import type { CharacterData } from "@/src/features/character/model"
+import {
+  saveCharacterToLocalStorage,
+  type SyncResult,
+  useAuth,
+  useFirestoreSync,
+} from "@/src/features/cloud"
 
 export function CloudSyncManager() {
   const { character, replaceCharacter } = useCharacter()
@@ -23,7 +25,7 @@ export function CloudSyncManager() {
   const handleSelectLocal = useCallback(async () => {
     if (!conflictData || !user) return
 
-    const { FirebaseCharacterService } = await import("@/src/lib/firebaseService")
+    const { FirebaseCharacterService } = await import("@/src/features/cloud/firebase-character-service")
 
     if (conflictData.localData) {
       replaceCharacter(conflictData.localData)

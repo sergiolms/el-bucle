@@ -1,6 +1,7 @@
-import { createContext, createElement, useContext, useEffect, useMemo, useState } from 'react'
-import type { User } from 'firebase/auth'
-import { getAuthService, isFirebaseConfigured } from './firebase'
+import type React from "react"
+import type { User } from "firebase/auth"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { getAuthService, isFirebaseConfigured } from "./firebase"
 
 interface AuthContextValue {
   user: User | null
@@ -28,12 +29,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void (async () => {
       try {
         const [authModule, auth] = await Promise.all([
-          import('firebase/auth'),
+          import("firebase/auth"),
           getAuthService(),
         ])
 
         if (!auth || cancelled) {
-          if (!cancelled) setLoading(false)
+          if (!cancelled) {
+            setLoading(false)
+          }
           return
         }
 
@@ -43,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
         })
       } catch (error) {
-        console.error('❌ Error loading auth state:', error)
+        console.error("❌ Error loading auth state:", error)
         if (!cancelled) {
           setLoading(false)
         }
@@ -58,38 +61,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (!isFirebaseConfigured) {
-      console.warn('⚠️ Firebase no está configurado')
-      throw new Error('Firebase not configured')
+      console.warn("⚠️ Firebase no está configurado")
+      throw new Error("Firebase not configured")
     }
 
     try {
       const [authModule, auth] = await Promise.all([
-        import('firebase/auth'),
+        import("firebase/auth"),
         getAuthService(),
       ])
 
       if (!auth) {
-        throw new Error('Firebase auth unavailable')
+        throw new Error("Firebase auth unavailable")
       }
 
       const result = await authModule.signInWithPopup(auth, new authModule.GoogleAuthProvider())
-      console.log('✅ Login exitoso:', result.user.displayName || result.user.email)
+      console.log("✅ Login exitoso:", result.user.displayName || result.user.email)
       return result.user
     } catch (error: any) {
-      console.error('❌ Error en login:', error.message)
+      console.error("❌ Error en login:", error.message)
       throw error
     }
   }
 
   const signOut = async () => {
     if (!isFirebaseConfigured) {
-      console.warn('⚠️ Firebase no está configurado')
+      console.warn("⚠️ Firebase no está configurado")
       return
     }
 
     try {
       const [authModule, auth] = await Promise.all([
-        import('firebase/auth'),
+        import("firebase/auth"),
         getAuthService(),
       ])
 
@@ -98,9 +101,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       await authModule.signOut(auth)
-      console.log('✅ Logout exitoso')
+      console.log("✅ Logout exitoso")
     } catch (error: any) {
-      console.error('❌ Error en logout:', error.message)
+      console.error("❌ Error en logout:", error.message)
       throw error
     }
   }
@@ -111,16 +114,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signOut,
     isFirebaseConfigured,
-  }), [user, loading, signInWithGoogle, signOut])
+  }), [user, loading])
 
-  return createElement(AuthContext.Provider, { value }, children)
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const context = useContext(AuthContext)
 
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
+    throw new Error("useAuth must be used within AuthProvider")
   }
 
   return context
