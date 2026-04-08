@@ -1,8 +1,18 @@
-import { useEffect, useState } from 'react'
+import { createContext, createElement, useContext, useEffect, useMemo, useState } from 'react'
 import type { User } from 'firebase/auth'
 import { getAuthService, isFirebaseConfigured } from './firebase'
 
-export function useAuth() {
+interface AuthContextValue {
+  user: User | null
+  loading: boolean
+  signInWithGoogle: () => Promise<User>
+  signOut: () => Promise<void>
+  isFirebaseConfigured: boolean
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -95,5 +105,23 @@ export function useAuth() {
     }
   }
 
-  return { user, loading, signInWithGoogle, signOut, isFirebaseConfigured }
+  const value = useMemo<AuthContextValue>(() => ({
+    user,
+    loading,
+    signInWithGoogle,
+    signOut,
+    isFirebaseConfigured,
+  }), [user, loading, signInWithGoogle, signOut])
+
+  return createElement(AuthContext.Provider, { value }, children)
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider')
+  }
+
+  return context
 }
