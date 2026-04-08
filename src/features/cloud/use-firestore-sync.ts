@@ -13,12 +13,25 @@ interface UseFirestoreSyncProps {
 
 export function useFirestoreSync({ userId, character, onUpdate, onConflict }: UseFirestoreSyncProps) {
   const [synced, setSynced] = useState(false)
+  const [initialSyncComplete, setInitialSyncComplete] = useState(false)
+  const [hasPendingConflict, setHasPendingConflict] = useState(false)
   const lastSavedRef = useRef("")
   const pendingChangesRef = useRef(false)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !userId || synced) return
+    if (!userId) {
+      setSynced(false)
+      setInitialSyncComplete(false)
+      setHasPendingConflict(false)
+      lastSavedRef.current = ""
+      pendingChangesRef.current = false
+      return
+    }
+  }, [userId])
+
+  useEffect(() => {
+    if (!isFirebaseConfigured || !userId || initialSyncComplete) return
 
     const initialSync = async () => {
       try {
@@ -30,24 +43,31 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
           console.log("✅ Initial synchronization completed")
 
           if (syncResult.hasConflict && onConflict) {
+            setHasPendingConflict(true)
             onConflict(syncResult)
           } else {
             onUpdate(syncResult.character)
             lastSavedRef.current = JSON.stringify(syncResult.character)
+            setSynced(true)
           }
+        } else {
+          lastSavedRef.current = JSON.stringify(character)
+          setSynced(true)
         }
       } catch (error) {
         console.error("❌ Initial synchronization error:", error)
+        lastSavedRef.current = JSON.stringify(character)
+        setSynced(true)
       }
 
-      setSynced(true)
+      setInitialSyncComplete(true)
     }
 
     void initialSync()
-  }, [userId, synced, onUpdate, onConflict])
+  }, [character, initialSyncComplete, onConflict, onUpdate, userId])
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !userId || !synced) return
+    if (!isFirebaseConfigured || !userId || !synced || hasPendingConflict) return
 
     let active = true
     let unsubscribe = () => {}
@@ -93,9 +113,17 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
       active = false
       unsubscribe()
     }
-  }, [userId, synced, onUpdate])
+  }, [hasPendingConflict, onUpdate, synced, userId])
 
   useEffect(() => {
+    if (hasPendingConflict) {
+      pendingChangesRef.current = false
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+      return
+    }
+
     const currentData = JSON.stringify(character)
 
     if (currentData === lastSavedRef.current) {
@@ -134,7 +162,7 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [character, userId, synced])
+  }, [character, hasPendingConflict, userId, synced])
 
   const saveToFirestore = useCallback(async () => {
     if (!userId) return
@@ -149,5 +177,12 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
     }
   }, [userId, character])
 
-  return { saveToFirestore, synced, isLoggedIn: !!userId }
+  const resolveConflict = useCallback((resolvedCharacter: CharacterData) => {
+    lastSavedRef.current = JSON.stringify(resolvedCharacter)
+    pendingChangesRef.current = false
+    setHasPendingConflict(false)
+    setSynced(true)
+  }, [])
+
+  return { saveToFirestore, resolveConflict, synced, isLoggedIn: !!userId }
 }
