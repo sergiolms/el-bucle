@@ -10,6 +10,7 @@ export {
 } from "./current-character-store"
 export {
   createHistorySnapshot,
+  deleteHistorySnapshots,
   HISTORY_SNAPSHOT_EVENT,
   listHistorySnapshots,
   type HistorySnapshotRecord,

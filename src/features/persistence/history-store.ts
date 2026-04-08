@@ -84,9 +84,23 @@ export async function listHistorySnapshots(): Promise<HistorySnapshotRecord[]> {
   const { store } = await getObjectStore(HISTORY_SNAPSHOTS_STORE, "readonly")
   const records = await wrapRequest(store.getAll())
 
-  return ((records as HistorySnapshotRecord[] | undefined) ?? []).sort((a, b) => {
-    if (b.day !== a.day) return b.day - a.day
-    if (b.hour !== a.hour) return b.hour - a.hour
-    return b.createdAt - a.createdAt
+  return ((records as HistorySnapshotRecord[] | undefined) ?? []).sort((a, b) => b.createdAt - a.createdAt)
+}
+
+export async function deleteHistorySnapshots(snapshotIds: string[]): Promise<void> {
+  if (!snapshotIds.length) {
+    return
+  }
+
+  const { store, transaction } = await getObjectStore(HISTORY_SNAPSHOTS_STORE, "readwrite")
+
+  snapshotIds.forEach((snapshotId) => {
+    store.delete(snapshotId)
   })
+
+  await waitForTransaction(transaction)
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(HISTORY_SNAPSHOT_EVENT))
+  }
 }
