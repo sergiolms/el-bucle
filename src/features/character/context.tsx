@@ -1,6 +1,6 @@
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react"
-import { loadCharacterFromLocalStorage } from "@/src/features/cloud"
+import { loadCurrentCharacter } from "@/src/features/persistence"
 import { characterReducer } from "./reducer"
 import { defaultCharacter, type CharacterData, type Enemy, type Note, type Weapon } from "./model"
 import { getEnemyName } from "./selectors"
@@ -38,10 +38,18 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const [character, dispatch] = useReducer(characterReducer, defaultCharacter)
 
   useEffect(() => {
-    const localData = loadCharacterFromLocalStorage()
+    let active = true
 
-    if (localData) {
-      dispatch({ type: "replace-character", nextCharacter: localData.character })
+    void (async () => {
+      const localCharacter = await loadCurrentCharacter()
+
+      if (active && localCharacter) {
+        dispatch({ type: "replace-character", nextCharacter: localCharacter })
+      }
+    })()
+
+    return () => {
+      active = false
     }
   }, [])
 
