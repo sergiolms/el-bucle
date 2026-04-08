@@ -23,7 +23,7 @@ export function NumericInput({
   const [internalValue, setInternalValue] = useState<string>(value.toString())
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
+    const val = e.target.value.replace(/[^\d-]/g, "")
     setInternalValue(val)
     if (val === '' || val === '-') {
       return
@@ -53,11 +53,14 @@ export function NumericInput({
 
   return (
     <Input
-      type="number"
+      type="text"
       min={min}
       max={max}
       inputMode="numeric"
       pattern="[0-9]*"
+      autoComplete="off"
+      autoCorrect="off"
+      spellCheck={false}
       enterKeyHint="done"
       value={internalValue}
       onChange={handleChange}
