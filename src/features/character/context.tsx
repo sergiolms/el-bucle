@@ -1,6 +1,6 @@
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react"
-import { loadCharacterFromLocalStorage } from "@/src/features/cloud"
+import { createHistorySnapshot, loadCurrentCharacter } from "@/src/features/persistence"
 import { characterReducer } from "./reducer"
 import { defaultCharacter, type CharacterData, type Enemy, type Note, type Weapon } from "./model"
 import { getEnemyName } from "./selectors"
@@ -27,7 +27,8 @@ interface CharacterContextType {
   updateEnemy: (id: string, updates: Partial<Enemy>) => void
   rollPlayerDice: () => number
   rollEnemyDice: (enemyId: string) => number
-  resetDay: () => void
+  createSavePoint: (details: { section: string; zone: string; location: string }) => Promise<boolean>
+  resetDay: () => Promise<void>
   resetAll: () => void
   getEnemyName: (index: number) => string
 }
@@ -38,10 +39,18 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
   const [character, dispatch] = useReducer(characterReducer, defaultCharacter)
 
   useEffect(() => {
-    const localData = loadCharacterFromLocalStorage()
+    let active = true
 
-    if (localData) {
-      dispatch({ type: "replace-character", nextCharacter: localData.character })
+    void (async () => {
+      const localCharacter = await loadCurrentCharacter()
+
+      if (active && localCharacter) {
+        dispatch({ type: "replace-character", nextCharacter: localCharacter })
+      }
+    })()
+
+    return () => {
+      active = false
     }
   }, [])
 
@@ -129,9 +138,37 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
     return roll
   }, [])
 
-  const resetDay = useCallback(() => {
+  const createSavePoint = useCallback(async (details: { section: string; zone: string; location: string }) => {
+    const nextCharacter = {
+      ...character,
+      currentSection: details.section,
+    }
+
+    try {
+      await createHistorySnapshot(nextCharacter, {
+        source: "manual",
+        section: details.section,
+        zone: details.zone,
+        location: details.location,
+        label: `Checkpoint ${details.section}`,
+      })
+      dispatch({ type: "merge-updates", updates: { currentSection: details.section } })
+      return true
+    } catch (error) {
+      console.error("Error creating manual save point:", error)
+      return false
+    }
+  }, [character])
+
+  const resetDay = useCallback(async () => {
+    try {
+      await createHistorySnapshot(character, { source: "end-of-day" })
+    } catch (error) {
+      console.error("Error creating end-of-day checkpoint:", error)
+    }
+
     dispatch({ type: "reset-day" })
-  }, [])
+  }, [character])
 
   const resetAll = useCallback(() => {
     dispatch({ type: "reset-all" })
@@ -159,6 +196,7 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
     updateEnemy,
     rollPlayerDice,
     rollEnemyDice,
+    createSavePoint,
     resetDay,
     resetAll,
     getEnemyName,
@@ -184,6 +222,7 @@ export function CharacterProvider({ children }: { children: React.ReactNode }) {
     updateEnemy,
     rollPlayerDice,
     rollEnemyDice,
+    createSavePoint,
     resetDay,
     resetAll,
   ])

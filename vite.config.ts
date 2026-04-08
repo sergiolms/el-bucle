@@ -59,7 +59,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'El Bucle - Ficha de Personaje',
@@ -112,6 +112,13 @@ export default defineConfig({
             short_name: 'Notas',
             description: 'Sistema de investigación y notas',
             url: '/el-bucle/?tab=notes',
+            icons: [{ src: '/el-bucle/icon-192x192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Historial',
+            short_name: 'Historial',
+            description: 'Consultar checkpoints y progreso temporal',
+            url: '/el-bucle/?tab=history',
             icons: [{ src: '/el-bucle/icon-192x192.png', sizes: '192x192' }]
           }
         ]

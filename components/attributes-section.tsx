@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { AttributeCounter } from "@/components/ui/attribute-counter"
 import { DecisionDice } from "./attributes/decision-dice"
+import { TanisMapReference } from "./tanis-map-reference"
 import { BookOpen } from "lucide-react"
 
 export function AttributesSection() {
@@ -79,6 +80,10 @@ export function AttributesSection() {
           placeholder="Ej: 1, 42, 103..."
           className="retro-input text-retro-cyan border-retro-cyan text-center font-bold text-lg"
         />
+      </div>
+
+      <div className="mb-6">
+        <TanisMapReference />
       </div>
 
       <DecisionDice />

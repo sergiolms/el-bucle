@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { CharacterData } from "@/src/features/character/model"
+import { saveCurrentCharacter } from "@/src/features/persistence"
 import type { SyncResult } from "./firebase-character-service"
 import { isFirebaseConfigured } from "./firebase"
-import { saveCharacterToLocalStorage } from "./local-character-storage"
 
 interface UseFirestoreSyncProps {
   userId: string | null
@@ -25,7 +25,7 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
         const { FirebaseCharacterService } = await import("./firebase-character-service")
         await FirebaseCharacterService.enableOfflinePersistence()
 
-        const syncResult = await FirebaseCharacterService.syncWithLocalStorage(userId)
+        const syncResult = await FirebaseCharacterService.syncWithLocalData(userId)
         if (syncResult) {
           console.log("✅ Initial synchronization completed")
 
@@ -69,7 +69,7 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
             if (remoteData !== localData) {
               console.log("🔄 Changes detected from another device")
               onUpdate(remoteCharacter)
-              saveCharacterToLocalStorage(remoteCharacter)
+              void saveCurrentCharacter(remoteCharacter)
               lastSavedRef.current = remoteData
             }
           },
@@ -111,7 +111,7 @@ export function useFirestoreSync({ userId, character, onUpdate, onConflict }: Us
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        saveCharacterToLocalStorage(character)
+        await saveCurrentCharacter(character)
 
         if (isFirebaseConfigured && userId && synced) {
           const { FirebaseCharacterService } = await import("./firebase-character-service")

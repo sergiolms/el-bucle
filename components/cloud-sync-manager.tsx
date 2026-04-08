@@ -2,8 +2,8 @@ import { useCallback, useState } from "react"
 import { DataConflictModal } from "./data-conflict-modal"
 import { useCharacter } from "./character-context"
 import type { CharacterData } from "@/src/features/character/model"
+import { saveCurrentCharacter } from "@/src/features/persistence"
 import {
-  saveCharacterToLocalStorage,
   type SyncResult,
   useAuth,
   useFirestoreSync,
@@ -30,10 +30,10 @@ export function CloudSyncManager() {
     if (conflictData.localData) {
       replaceCharacter(conflictData.localData)
       await FirebaseCharacterService.saveCharacter(user.uid, conflictData.localData)
-      saveCharacterToLocalStorage(conflictData.localData)
+      await saveCurrentCharacter(conflictData.localData)
     } else {
       await FirebaseCharacterService.saveCharacter(user.uid, character)
-      saveCharacterToLocalStorage(character)
+      await saveCurrentCharacter(character)
     }
 
     setConflictData(null)
@@ -43,7 +43,7 @@ export function CloudSyncManager() {
     if (!conflictData?.cloudData) return
 
     replaceCharacter(conflictData.cloudData)
-    saveCharacterToLocalStorage(conflictData.cloudData)
+    void saveCurrentCharacter(conflictData.cloudData)
     setConflictData(null)
   }, [conflictData, replaceCharacter])
 

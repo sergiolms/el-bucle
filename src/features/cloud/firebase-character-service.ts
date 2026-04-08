@@ -1,10 +1,10 @@
 import type { Unsubscribe } from "firebase/firestore"
 import type { CharacterData } from "@/src/features/character/model"
-import { getFirestoreService, isFirebaseConfigured } from "./firebase"
 import {
-  loadCharacterFromLocalStorage,
-  saveCharacterToLocalStorage,
-} from "./local-character-storage"
+  getCurrentCharacterRecord,
+  saveCurrentCharacter,
+} from "@/src/features/persistence"
+import { getFirestoreService, isFirebaseConfigured } from "./firebase"
 
 const CHARACTERS_COLLECTION = "characters"
 
@@ -202,24 +202,24 @@ export class FirebaseCharacterService {
     )
   }
 
-  static async migrateFromLocalStorage(userId: string): Promise<boolean> {
+  static async migrateFromLocalStore(userId: string): Promise<boolean> {
     try {
       const existingCharacter = await this.getCharacter(userId)
       if (existingCharacter) {
         return false
       }
 
-      const localData = loadCharacterFromLocalStorage()
-      if (!localData) {
+      const localRecord = await getCurrentCharacterRecord()
+      if (!localRecord) {
         return false
       }
 
-      await this.saveCharacter(userId, localData.character)
+      await this.saveCharacter(userId, localRecord.character)
 
-      console.log("✅ Data migrated from localStorage to Firestore successfully")
+      console.log("✅ Data migrated from local storage to Firestore successfully")
       return true
     } catch (error) {
-      console.error("Error migrating from localStorage to Firestore:", error)
+      console.error("Error migrating from local storage to Firestore:", error)
       return false
     }
   }
@@ -295,17 +295,17 @@ export class FirebaseCharacterService {
     }
   }
 
-  static async syncWithLocalStorage(userId: string): Promise<SyncResult | null> {
+  static async syncWithLocalData(userId: string): Promise<SyncResult | null> {
     try {
-      const localData = loadCharacterFromLocalStorage()
+      const localRecord = await getCurrentCharacterRecord()
       const firestoreResult = await this.getCharacterWithTimestamp(userId)
 
-      if (!localData && !firestoreResult) {
+      if (!localRecord && !firestoreResult) {
         console.log("📭 No data to synchronize")
         return null
       }
 
-      if (!localData && firestoreResult) {
+      if (!localRecord && firestoreResult) {
         console.log("📥 Cloud data found but no local data - asking user")
         return {
           character: firestoreResult.character,
@@ -317,24 +317,24 @@ export class FirebaseCharacterService {
         }
       }
 
-      if (localData && !firestoreResult) {
+      if (localRecord && !firestoreResult) {
         console.log("📤 Uploading local data to Firestore (first sync)")
-        await this.saveCharacter(userId, localData.character)
+        await this.saveCharacter(userId, localRecord.character)
         return {
-          character: localData.character,
+          character: localRecord.character,
           hasConflict: false,
         }
       }
 
-      if (localData && firestoreResult) {
+      if (localRecord && firestoreResult) {
         const { isEqual, changedFields } = this.compareCharacterData(
-          localData.character,
+          localRecord.character,
           firestoreResult.character
         )
 
         if (isEqual) {
           console.log("✅ Local and cloud data are identical")
-          saveCharacterToLocalStorage(firestoreResult.character)
+          await saveCurrentCharacter(firestoreResult.character)
           return {
             character: firestoreResult.character,
             hasConflict: false,
@@ -346,9 +346,9 @@ export class FirebaseCharacterService {
           character: firestoreResult.character,
           hasConflict: true,
           conflictType: "data-mismatch",
-          localData: localData.character,
+          localData: localRecord.character,
           cloudData: firestoreResult.character,
-          localTimestamp: localData.timestamp || undefined,
+          localTimestamp: localRecord.updatedAt || undefined,
           cloudTimestamp: firestoreResult.updatedAt || undefined,
           changedFields,
         }
@@ -356,7 +356,7 @@ export class FirebaseCharacterService {
 
       return null
     } catch (error) {
-      console.error("Error syncing with localStorage:", error)
+      console.error("Error syncing with local data:", error)
       return null
     }
   }

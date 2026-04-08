@@ -3,7 +3,10 @@ export const TAB_BASE_CLASSES = "font-mono text-sm sm:text-base uppercase border
 
 export const TAB_ACTIVE_CLASSES = "data-[state=active]:bg-gradient-to-br data-[state=active]:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
 
-export function getTabClasses(color: 'pink' | 'cyan' | 'orange' | 'yellow', position: 'first' | 'middle' | 'last') {
+export function getTabClasses(
+  color: "pink" | "cyan" | "orange" | "yellow" | "green",
+  position: "first" | "middle" | "last"
+) {
   const colorClasses = {
     pink: {
       active: "data-[state=active]:from-retro-pink/20 data-[state=active]:to-transparent data-[state=active]:text-retro-pink data-[state=active]:border-retro-pink/40 data-[state=active]:shadow-[0_0_16px_rgba(255,20,147,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]",
@@ -20,6 +23,10 @@ export function getTabClasses(color: 'pink' | 'cyan' | 'orange' | 'yellow', posi
     yellow: {
       active: "data-[state=active]:from-retro-yellow/20 data-[state=active]:to-transparent data-[state=active]:text-retro-yellow data-[state=active]:border-retro-yellow/40 data-[state=active]:shadow-[0_0_16px_rgba(218,165,32,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]",
       default: "text-retro-yellow/70 hover:border-retro-yellow/20 hover:text-retro-yellow/90 bg-transparent"
+    },
+    green: {
+      active: "data-[state=active]:from-retro-green/20 data-[state=active]:to-transparent data-[state=active]:text-retro-green data-[state=active]:border-retro-green/40 data-[state=active]:shadow-[0_0_16px_rgba(60,179,113,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]",
+      default: "text-retro-green/70 hover:border-retro-green/20 hover:text-retro-green/90 bg-transparent"
     }
   }
 

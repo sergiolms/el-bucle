@@ -2,26 +2,40 @@
 import { useCharacter } from "./character-context"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
-import { Minus, Plus, Calendar, Clock, RotateCcw, Trash2 } from "lucide-react"
+import { Minus, Plus, Calendar, Clock, RotateCcw, Save, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { SavePointDialog } from "./save-point-dialog"
 
 export function TimeSection() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false)
-  const { character, updateCharacter, resetDay, resetAll } = useCharacter()
+  const [showSavePointDialog, setShowSavePointDialog] = useState(false)
+  const [savePointState, setSavePointState] = useState<"idle" | "saved" | "error">("idle")
+  const { character, updateCharacter, createSavePoint, resetDay, resetAll } = useCharacter()
 
   const formatHour = (hour: number) => {
     return `${hour.toString().padStart(2, "0")}:00`
   }
 
-  const handleResetDay = () => {
-    resetDay()
+  const handleResetDay = async () => {
+    await resetDay()
     setShowResetConfirm(false)
   }
 
   const handleResetAll = () => {
     resetAll()
     setShowResetAllConfirm(false)
+  }
+
+  const handleCreateSavePoint = async (details: { section: string; zone: string; location: string }) => {
+    const success = await createSavePoint(details)
+    setSavePointState(success ? "saved" : "error")
+
+    window.setTimeout(() => {
+      setSavePointState("idle")
+    }, 2500)
+
+    return success
   }
 
   return (
@@ -109,6 +123,37 @@ export function TimeSection() {
         </div>
       </div>
 
+      <div className="mt-6 p-4 bg-black/20 backdrop-blur-md border border-retro-green/25 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-center sm:text-left">
+            <p className="retro-text text-retro-green text-xs sm:text-sm tracking-wider">
+              SAVE POINT MANUAL
+            </p>
+            <p className="text-retro-cyan/70 font-mono text-[10px] sm:text-xs mt-1">
+              Guarda un checkpoint en Día {character.day} a las {formatHour(character.hour)} con sección y localización explícitas
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowSavePointDialog(true)}
+            className="bg-gradient-to-r from-retro-green/80 to-emerald-500/70 hover:from-retro-green hover:to-emerald-400 text-white font-display text-xs sm:text-sm uppercase border-2 border-retro-green/60 shadow-[0_0_18px_rgba(60,179,113,0.35)] px-4 sm:px-6 py-2 sm:py-3 w-full sm:w-auto"
+          >
+            <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+            CREAR SAVE POINT
+          </Button>
+        </div>
+        <p className="mt-3 text-center sm:text-left text-[10px] sm:text-xs font-mono text-retro-green/80 min-h-4">
+          {savePointState === "saved" ? "Checkpoint guardado en el historial." : null}
+          {savePointState === "error" ? "No se pudo guardar el checkpoint." : null}
+        </p>
+      </div>
+
+      <SavePointDialog
+        currentSection={character.currentSection}
+        isOpen={showSavePointDialog}
+        onOpenChange={setShowSavePointDialog}
+        onSave={handleCreateSavePoint}
+      />
+
       {/* Botones de Reset */}
       <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t-2 border-retro-pink/30 space-y-4">
         {/* Reset Diario */}
@@ -127,7 +172,7 @@ export function TimeSection() {
               <p className="text-retro-orange font-display text-xs sm:text-sm mb-2">¿Confirmar reset diario?</p>
               <p className="text-retro-cyan/70 font-mono text-[10px] sm:text-xs mb-3 sm:mb-4">
                 Se avanzará al día {character.day + 1}, se reiniciará la hora, se borrarán objetos/armas sin candado y
-                pistas temporales
+                pistas temporales. Antes se guardará un checkpoint automático del estado actual.
               </p>
               <div className="flex gap-2 justify-center flex-wrap">
                 <Button onClick={handleResetDay} className="retro-button text-xs flex-1 sm:flex-none min-w-[100px]">
