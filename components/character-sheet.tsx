@@ -62,13 +62,13 @@ export function CharacterSheet() {
               <Swords className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span>COMBATE</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className={getTabClasses('green', 'middle')}>
-              <History className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-              <span>HISTORIAL</span>
-            </TabsTrigger>
-            <TabsTrigger value="notes" className={getTabClasses('yellow', 'last')}>
+            <TabsTrigger value="notes" className={getTabClasses('yellow', 'middle')}>
               <FileText className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span>NOTAS</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className={getTabClasses('green', 'last')}>
+              <History className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span>HISTORIAL</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -89,15 +89,15 @@ export function CharacterSheet() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="notes" className="space-y-6">
-          <Suspense fallback={<TabPanelFallback />}>
-            <NotesTab />
-          </Suspense>
-        </TabsContent>
-
         <TabsContent value="history" className="space-y-6">
           <Suspense fallback={<TabPanelFallback />}>
             <HistoryTab />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="notes" className="space-y-6">
+          <Suspense fallback={<TabPanelFallback />}>
+            <NotesTab />
           </Suspense>
         </TabsContent>
       </Tabs>
